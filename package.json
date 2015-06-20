@@ -1,0 +1,27 @@
+{
+  "name": "pulse",
+  "version": "1.0.0",
+  "description": "ECE RSO Office Music System",
+  "main": "app.js",
+  "scripts": {
+    "bower": "bower install",
+    "start": "node app.js"
+  },
+  "dependencies": {
+  	"vlc-control-io": "latest",
+  	"express": "latest"
+  },
+  "devDependencies": {
+  	"bower": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ieee-uiuc/pulse.git"
+  },
+  "author": "Anit Gandhi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ieee-uiuc/pulse/issues"
+  },
+  "homepage": "https://github.com/ieee-uiuc/pulse#readme"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "pulse",
+  "version": "1.0.0",
+  "description": "ECE RSO Office Music System",
+  "main": "app/",
+  "authors": [
+    "Anit Gandhi"
+  ],
+  "dependencies": {
+    "angular": "latest",
+    "jquery": "latest",
+    "materialize": "latest"
+  },
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "app/components",
+    "test",
+    "tests"
+  ]
+}

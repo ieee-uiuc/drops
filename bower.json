@@ -11,12 +11,4 @@
     "jquery": "latest",
     "materialize": "latest"
   },
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "app/components",
-    "test",
-    "tests"
-  ]
 }

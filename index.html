@@ -1,0 +1,93 @@
+<!doctype html>
+
+<html>
+	<head>
+		<script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+		<script src="/bower_components/angular/angular.min.js"></script>
+		<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+		<script src="/bower_components/materialize/dist/js/materialize.min.js"></script>
+
+		<link rel="stylesheet" href="bower_components/materialize/dist/css/materialize.min.css">
+
+		<script>
+			$(function() {
+				var socket = io();
+
+			// 	socket.on('conectado', function(msg) {
+			// 		socket.emit('cfg', {
+			// 			ip : '192.168.1.103',
+			// 			port : 8080,
+			// 			user : '',
+			// 			password : 'asd123'
+			// 		});
+			// 	});
+			// 	socket.on('fault', function(msg) {
+			// 		alert(msg);
+			// 	});
+			// 	socket.on('sucess', function(msg) {
+			// 		$('#info').text(msg);
+			// 		//console.log(msg);
+			// 		var obj = JSON.parse(msg);
+			// 		if ((obj) && (obj.information) && (obj.information.category) && (obj.information.category.meta) && (obj.information.category.meta.artwork_url)) {
+			// 			$('#img').attr("src", obj.information.category.meta.artwork_url);
+			// 			$('#artist').text('Artist: ' +obj.information.category.meta.artist);
+			// 			$('#music').text('Music: ' + obj.information.category.meta.filename);
+			// 		} else {
+			// 			$('#artist').text('');
+			// 			$('#music').text('');
+			// 			$('#img').attr("src", '');
+			// 		}
+			// 	});
+			// 	$('#play').click(function() {
+			// 		socket.emit('command', {
+			// 			command : 'play'
+			// 		});
+			// 	});
+			// 	$('#stop').click(function() {
+			// 		socket.emit('command', {
+			// 			command : 'stop'
+			// 		});
+			// 	});
+			// 	$('#pause').click(function() {
+			// 		socket.emit('command', {
+			// 			command : 'pause'
+			// 		});
+			// 	});
+			// 	$('#previous').click(function() {
+			// 		socket.emit('command', {
+			// 			command : 'previous'
+			// 		});
+			// 	});
+			// 	$('#next').click(function() {
+			// 		socket.emit('command', {
+			// 			command : 'next'
+			// 		});
+			// 	});
+			});
+		</script>
+	</head>
+
+	<body>
+		
+		<div id='info'></div></br>
+		<div id='artist'></div></br>
+		<div id='music'></div></br>
+		<img id='img' src=""/></br>
+		<button id='play'>
+			Play
+		</button>
+		<button id='pause'>
+			Pause
+		</button>
+		<button id='stop'>
+			Stop
+		</button>
+		<button id='previous'>
+			Previous
+		</button>
+		<button id='next'>
+			Next
+		</button>
+		
+	</body>
+</html>

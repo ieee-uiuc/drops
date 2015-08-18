@@ -8,8 +8,8 @@
     "start": "node app.js"
   },
   "dependencies": {
-  	"vlc-control-io": "latest",
-  	"express": "latest"
+  	"express": "latest",
+    "socket.io": "latest"
   },
   "devDependencies": {
   	"bower": "latest"

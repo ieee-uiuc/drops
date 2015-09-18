@@ -8,12 +8,11 @@
     "start": "node app.js"
   },
   "dependencies": {
-  	"express": "latest",
-    "socket.io": "latest"
+    "express": "latest",
+    "socket.io": "latest",
+    "vlc": "latest"
   },
-  "devDependencies": {
-  	"bower": "latest"
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ieee-uiuc/pulse.git"

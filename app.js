@@ -1,20 +1,25 @@
 var express = require('express');
 var app = express();
-var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var spawn = require("child_process").spawn;
+
 var port = 80;
 
-// For mapping the static bower_components
-app.use('/bower_components', express.static(__dirname + '/bower_components'));
+// The public site
+app.use(express.static('public'));
+var server = app.listen(80);
 
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
-});
+// APIs and socket interactions
 
 io.on('connection', function(socket){
   console.log('a user connected');
 });
 
-http.listen(port, function(){
-  console.log('listening on *:' + port);
-});
+testURL = "https://www.youtube.com/watch?v=z5ZdjwbQnXc";
+
+var process = spawn('python',["audio_url.py", testURL]);
+process.stdout.on('data', function (data) {
+	results = JSON.parse(data);
+	console.log(results);
+})
+

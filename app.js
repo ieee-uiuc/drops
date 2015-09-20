@@ -14,8 +14,8 @@ function getInfo(url) {
 					var results = info.formats;
 					results.forEach(function(item) {
 						// only take the ones that are of audio mp4 type
-						if ((item.type).indexOf("audio/mp4") > -1)
-							console.log(item.url)
+						if ((item.type).indexOf("audio/mp4") > -1) 
+							return item.url;
 					});
 	});
 }
@@ -44,8 +44,9 @@ io.on('connection', function(socket){
 
 	// Add a song to the playlist
 	socket.on('addSong', function(data) {
-		var url = getInfo(data.url);
-		rcVLC('add ' + url);
+		var audioURL = getInfo(data.url);
+		console.log(audioURL);
+		rcVLC('add ' + audioURL);
 	});
 
 	// Commands

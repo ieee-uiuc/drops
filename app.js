@@ -4,6 +4,9 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var spawn = require('child_process').spawn;
 
+// Total current user counter
+var userCount = 0;
+
 // Returns a direct URL to the first audio stream for the video
 function getInfo(url, cb) {
 	var ytdl = require('ytdl-core');
@@ -22,10 +25,16 @@ function getInfo(url, cb) {
 var vlc = spawn('vlc', ['-I', 'rc']);
 vlc.stdin.setEncoding('utf-8');
 
-function rcVLC(command) {
+// Should return the output from stdout via callback
+function rcVLC(command, cb) {
 	var toWrite = command + "\n";
 	console.log("Attempted command: " + toWrite);
 	vlc.stdin.write(toWrite);
+
+	vlc.stdout.on('data', function(data) {
+		console.log("rc results: " + data);
+        cb(data.toString());
+    });
 }
 
 // if you do port 80, you need sudo, but vlc won't run with sudo...
@@ -38,7 +47,22 @@ server.listen(port);
 // APIs and socket interactions
 io.on('connection', function(socket){
 
-	console.log('a user connected');
+	// Up the total current user counter
+	userCount++;
+	console.log("User Count: " + userCount);
+
+	socket.on('disconnect', function() {
+		userCount--;
+		console.log("User Count: " + userCount);
+	});
+
+	// Returns the current playlist
+	socket.on('getPlaylist', function(data, fn) {
+		rcVLC('playlist', function(result) {
+			console.log("wat: " + result);
+			fn(result);
+		});
+	});
 
 	// Add a song to the playlist
 	socket.on('addSong', function(data) {
@@ -48,13 +72,17 @@ io.on('connection', function(socket){
 	});
 
 	// Commands
-	socket.on('command', function(data) {
-		command = data.command;
-		if (command === "play")
-			rcVLC('play');
-		else if (command === "pause")
-			rcVLC('pause');
-		
+	socket.on('control', function(data) {
+		switch(data.command) {
+			case "play":
+			case "pause":
+			case "next":
+			case "prev":
+				rcVLC(data.command);
+				break;
+			default: 
+				console.log("Invalid command");
+		}
 	});
 });
 

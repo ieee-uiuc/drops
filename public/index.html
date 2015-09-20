@@ -2,12 +2,27 @@
 
 <html>
 	<head>
-		<!--		
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
-		-->
 	</head>
 
 	<body>
+		<!-- Youtube search and playlist -->
+		<div class="row">
+			<!-- YouTube Search -->
+			<div class="col s12 m6 l9"> 
+			</div>
+
+			<!-- Playlist -->
+			<div class="col s12 m6 l3" id="playlist"> 
+			</div>
+		</div>
+
+		<!-- Now Playing Controls -->
+		<div class="row">
+			<!-- Controls -->
+			<div class="col s12"> 
+			</div>
+		</div>
 		
 		<div id='info'></div></br>
 		<div id='artist'></div></br>
@@ -24,36 +39,17 @@
 			Pause
 		</button>
 
+		<button id='getPlaylist'>
+			Playlist
+		</button>
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
 
-		<!--
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
-		-->
 
-		<script>
-			alert('starting websocket connection');
-			var socket = io.connect("http://localhost:8080");
-
-			$('#submit').click(function() {
-				socket.emit('addSong', {
-					url : $('#formYTurl').val()
-				});
-			});
-			$('#play').click(function() {
-				socket.emit('command', {
-					command : 'play'
-				});
-			});
-				
-			$('#pause').click(function() {
-				socket.emit('command', {
-					command : 'pause'
-				});
-			});
-			
-		</script>
+		<script src="pulse.js"></script>
 		
 	</body>
 </html>

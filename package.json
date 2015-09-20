@@ -9,8 +9,7 @@
   },
   "dependencies": {
     "express": "latest",
-    "socket.io": "latest",
-    "vlc": "latest"
+    "socket.io": "latest"
   },
   "devDependencies": {},
   "repository": {

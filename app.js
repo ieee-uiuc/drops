@@ -2,15 +2,17 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-var spawnSync = require("child_process").spawnSync;
-var vlc = require('vlc')([
-  '-I', 'dummy',
-  '-V', 'dummy',
-  '--verbose', '1',
-  '--no-video-title-show',
-  '--no-disable-screensaver',
-  '--no-snapshot-preview',
-]);
+var child_process = require('child_process');
+var spawnSync = child_process.spawnSync;
+var spawn = child_process.spawn;
+
+// Create the remote controlled VLC process
+var vlc = spawn('vlc', ['-I', 'rc']);
+vlc.stdin.setEncoding
+
+function rcVLC(command) {
+	vlc.stdin.write(command);
+}
 
 // change so it doesn't spawn a new process on every single call to this function
 // also change to not using pafy/python down the line
@@ -33,9 +35,6 @@ var port = 80;
 app.use(express.static('public'));
 server.listen(port);
 
-// Player instance
-var player = vlc.mediaplayer;
-
 // APIs and socket interactions
 io.on('connection', function(socket){
 
@@ -43,11 +42,7 @@ io.on('connection', function(socket){
 
 	// Add a song to the playlist
 	socket.on('addSong', function(data) {
-		var media = vlc.mediaFromUrl(getAudioURL(data.url));
-		media.parseSync();
-		
-		player.media = media;
-		player.play();
+
 	});
 
 	// Commands

@@ -42,12 +42,9 @@ io.on('connection', function(socket){
 
 	// Add a song to the playlist
 	socket.on('addSong', function(data) {
-		var audioURL = '';
-		getInfo(data.url, function(temp) {
-			audioURL = temp;
+		getInfo(data.url, function(audioURL) {
+			rcVLC('add ' + audioURL);
 		});
-		console.log(audioURL);
-		rcVLC('add ' + audioURL);
 	});
 
 	// Commands

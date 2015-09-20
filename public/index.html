@@ -34,7 +34,7 @@
 
 		<script>
 			alert('starting websocket connection');
-			var socket = io.connect("http://localhost");
+			var socket = io.connect("http://localhost:8080");
 
 			$('#submit').click(function() {
 				socket.emit('addSong', {

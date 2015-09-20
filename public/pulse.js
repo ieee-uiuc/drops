@@ -1,6 +1,6 @@
 var socket = io();
 
-$('#submit').click(function() {
+$('#add').click(function() {
 	socket.emit('addSong', {
 		url : $('#formYTurl').val()
 	});
@@ -18,8 +18,20 @@ $('#pause').click(function() {
 	});
 });
 
+$('#next').click(function() {
+	socket.emit('control', {
+		command : 'next'
+	});
+});
+
+$('#prev').click(function() {
+	socket.emit('control', {
+		command : 'prev'
+	});
+});
+
 $('#getPlaylist').click(function() {
 	socket.emit('getPlaylist', function(data) {
-		$('#playlist').html(data);
+		$('#temp').append(data + "<br>");
 	});
 });

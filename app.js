@@ -6,6 +6,20 @@ var child_process = require('child_process');
 var spawnSync = child_process.spawnSync;
 var spawn = child_process.spawn;
 
+function getInfo(url) {
+	var ytdl = require('ytdl-core');
+	ytdl.getInfo(url,
+				{"downloadURL":true},
+				function(err, info) {
+					var results = info.formats;
+					results.forEach(function(item) {
+						// only take the ones that are of audio mp4 type
+						if ((item.type).indexOf("audio/mp4") > -1)
+							console.log(item.url)
+					});
+	});
+}
+
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
 vlc.stdin.setEncoding('utf-8');
@@ -14,14 +28,6 @@ function rcVLC(command) {
 	var toWrite = command + "\n";
 	console.log("Attempted command: " + toWrite);
 	vlc.stdin.write(toWrite);
-}
-
-// change so it doesn't spawn a new process on every single call to this function
-// also change to not using pafy/python down the line
-// make it asynchronous
-function getAudioURL(yturl) {
-	var py = spawnSync('python',["audio_url.py", yturl]);
-	return JSON.parse(py.stdout.toString()).audioURL;
 }
 
 // if you do port 80, you need sudo, but vlc won't run with sudo...
@@ -38,7 +44,7 @@ io.on('connection', function(socket){
 
 	// Add a song to the playlist
 	socket.on('addSong', function(data) {
-		var url = getAudioURL(data.url);
+		var url = getInfo(data.url);
 		rcVLC('add ' + url);
 	});
 

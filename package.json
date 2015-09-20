@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "express": "latest",
-    "socket.io": "latest"
+    "socket.io": "latest",
+    "ytdl-core": "latest"
   },
   "devDependencies": {},
   "repository": {

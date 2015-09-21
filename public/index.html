@@ -6,6 +6,7 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
 		<link rel="stylesheet" href="pulse.css">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>IEEE Beats</title>
 	</head>
 
 	<body class="grey darken-1">
@@ -26,32 +27,10 @@
 				</div>
 
 				<!-- queue -->
-				<div class="col s12 m6 l3" id="queue"> 
+				<div class="col s12 m6 l3"> 
 					<h1>QUEUE</h1>
-					<div class="row">
-						<div class="col s4">
-							<img class="responsive-img" src="https://i.ytimg.com/vi/CxycpDVnXHw/hqdefault.jpg"/>
-						</div>
-						<div class="col s4">Ave Maria</div>
-						<div class="col s4">Jesper Kyd</div>
+					<div id="queue">
 					</div>
-					<div class="row">
-						<div class="col s4">
-							<img class="responsive-img" src="https://i.ytimg.com/vi/CxycpDVnXHw/hqdefault.jpg"/>
-						</div>
-						<div class="col s4">Ave Maria</div>
-						<div class="col s4">Jesper Kyd</div>
-					</div>
-					<div class="row">
-						<div class="col s4">
-							<img class="responsive-img" src="https://i.ytimg.com/vi/CxycpDVnXHw/hqdefault.jpg"/>
-						</div>
-						<div class="col s4">Ave Maria</div>
-						<div class="col s4">Jesper Kyd</div>
-					</div>
-					<button class="waves-effect waves-light btn" id="getqueue">
-						queue
-					</button>
 				</div>
 			</div>
 		</main>
@@ -61,16 +40,18 @@
 			<div class="row valign-wrapper">
 				<!-- Number of users -->
 				<div class="col s2 left-align">
-					<h5>5 users connected</h5>
+					<h5><span id="numUsers">0</span> users connected</h5>
 				</div>
 
 				<!-- Media Controls -->
 				<div class="col s8 center-align">
-					<button class="waves-effect waves-light btn" id="prev">
+<!-- 					<button class="waves-effect waves-light btn" id="prev">
 						<i class="large material-icons">skip_previous</i>
-					</button>
-					<button class="waves-effect waves-light btn" id="playpause">
+					</button> -->
+					<button class="waves-effect waves-light btn" id="play">
 						<i class="large material-icons">play_arrow</i>
+					</button>
+					<button class="waves-effect waves-light btn" id="pause">
 						<i class="large material-icons">pause</i>
 					</button>
 					<button class="waves-effect waves-light btn" id="next">

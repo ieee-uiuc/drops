@@ -6,7 +6,7 @@ var spawn = require('child_process').spawn;
 var fs = require('fs');
 
 // Total current user counter
-var userCount = 0;
+var numUsers = 0;
 
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
@@ -30,7 +30,8 @@ function getInfo(url, cb) {
 						thumbnail : info.iurlhq,
 						title : info.title,
 						duration : info.length_seconds,
-						audioURL : ''
+						audioURL : '',
+						score: 0
 					}
 
 					var results = info.formats;
@@ -67,31 +68,34 @@ var port = 8080;
 app.use(express.static('public'));
 server.listen(port);
 
+function broadcast(key, value) {
+	io.emit(key, value);
+}
+
+function sendNumUsers() {
+	broadcast('numUsersChanged', {newNumUsers : numUsers});
+}
+
 // APIs and socket interactions
 io.on('connection', function(socket){
 
 	// Up the total current user counter
-	userCount++;
-	console.log("User Count: " + userCount);
-
+	numUsers++;
+	sendNumUsers();
+	
+	// when someone disconnects, send the updated num to all the other users
 	socket.on('disconnect', function() {
-		userCount--;
-		console.log("User Count: " + userCount);
-	});
-
-	// Returns the current playlist
-	socket.on('getPlaylist', function(fn) {
-		rcVLC('playlist', function(out) {
-			console.log(out);
-			fn(out);
-		});
+		numUsers--;
+		sendNumUsers();
 	});
 
 	// Add a song to the playlist
-	socket.on('addSong', function(data) {
+	socket.on('addSong', function(data, fn) {
 		getInfo(data.url, function(info) {
 			queue.push(info);
 			rcVLC('enqueue ' + info.audioURL);
+			console.log("Adding song: " + info.title);
+			fn();
 		});
 	});
 
@@ -102,22 +106,28 @@ io.on('connection', function(socket){
 		});
 	});
 
+	// Returns the current playlist
+	socket.on('getQueue', function(fn) {
+		fn(queue);
+	});
+
 	// Clear the queue
-	socket.on('clearPlaylist', function(data) {
+	socket.on('clearQueue', function(data) {
 		queue = [];
 		rcVLC('clear');
-	})
+	});
 
 	// Commands
-	socket.on('control', function(data) {
+	socket.on('control', function(data,fn) {
 		switch(data.command) {
 			case "play":
 			case "pause":
+				rcVLC(data.command);
+				break;
 			case "next":
-			case "prev":
-				rcVLC(data.command, function(out) {
-					console.log(out);
-				});
+				rcVLC(data.command);
+				queue.shift();
+				fn();
 				break;
 			default: 
 				console.log("Invalid command");

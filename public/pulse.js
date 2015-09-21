@@ -6,13 +6,13 @@ $('#add').click(function() {
 	});
 });
 
-$('#play').click(function() {
+$('#prev').click(function() {
 	socket.emit('control', {
-		command : 'play'
+		command : 'prev'
 	});
 });
-	
-$('#pause').click(function() {
+
+$('#playpause').click(function() {
 	socket.emit('control', {
 		command : 'pause'
 	});
@@ -21,12 +21,6 @@ $('#pause').click(function() {
 $('#next').click(function() {
 	socket.emit('control', {
 		command : 'next'
-	});
-});
-
-$('#prev').click(function() {
-	socket.emit('control', {
-		command : 'prev'
 	});
 });
 

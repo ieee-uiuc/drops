@@ -2,62 +2,96 @@
 
 <html>
 	<head>
+		<link rel="stylesheet" href="http://fonts.googleapis.com/icon?family=Material+Icons">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
+		<link rel="stylesheet" href="pulse.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 	</head>
 
-	<body>
-		<!-- Youtube search and playlist -->
-		<div class="row">
-			<!-- YouTube Search -->
-			<div class="col s12 m6 l9"> 
-			</div>
+	<body class="grey darken-1">
+		<!-- Links to RSOs or something -->
+		<header>
+			<!-- Hello -->
+		</header>
+		<main>
+			<!-- Youtube search and queue -->
+			<div class="row">
+				<!-- YouTube Search -->
+				<div class="col s12 m6 l9"> 
+					<h1>SEARCH</h1>
+					<input type="text" id="formYTurl" placeholder="Youtube URL to play"></input>
+					<button class="waves-effect waves-light btn" id='add'>
+						Add
+					</button>
+				</div>
 
-			<!-- Playlist -->
-			<div class="col s12 m6 l3" id="playlist"> 
+				<!-- queue -->
+				<div class="col s12 m6 l3" id="queue"> 
+					<h1>QUEUE</h1>
+					<div class="row">
+						<div class="col s4">
+							<img class="responsive-img" src="https://i.ytimg.com/vi/CxycpDVnXHw/hqdefault.jpg"/>
+						</div>
+						<div class="col s4">Ave Maria</div>
+						<div class="col s4">Jesper Kyd</div>
+					</div>
+					<div class="row">
+						<div class="col s4">
+							<img class="responsive-img" src="https://i.ytimg.com/vi/CxycpDVnXHw/hqdefault.jpg"/>
+						</div>
+						<div class="col s4">Ave Maria</div>
+						<div class="col s4">Jesper Kyd</div>
+					</div>
+					<div class="row">
+						<div class="col s4">
+							<img class="responsive-img" src="https://i.ytimg.com/vi/CxycpDVnXHw/hqdefault.jpg"/>
+						</div>
+						<div class="col s4">Ave Maria</div>
+						<div class="col s4">Jesper Kyd</div>
+					</div>
+					<button class="waves-effect waves-light btn" id="getqueue">
+						queue
+					</button>
+				</div>
 			</div>
-		</div>
+		</main>
 
 		<!-- Now Playing Controls -->
-		<div class="row">
-			<!-- Controls -->
-			<div class="col s12"> 
+		<footer class="page-footer">
+			<div class="row valign-wrapper">
+				<!-- Number of users -->
+				<div class="col s2 left-align">
+					<h5>5 users connected</h5>
+				</div>
+
+				<!-- Media Controls -->
+				<div class="col s8 center-align">
+					<button class="waves-effect waves-light btn" id="prev">
+						<i class="large material-icons">skip_previous</i>
+					</button>
+					<button class="waves-effect waves-light btn" id="playpause">
+						<i class="large material-icons">play_arrow</i>
+						<i class="large material-icons">pause</i>
+					</button>
+					<button class="waves-effect waves-light btn" id="next">
+						<i class="large material-icons">skip_next</i>
+					</button>
+				</div>
+
+				<!-- Volume -->
+				<div class="col s2 right-align">
+					<button class="waves-effect waves-light btn right-align" id="vol">
+						<i class="large material-icons">volume_mute</i>
+					</button>
+				</div>
 			</div>
-		</div>
-
-		<div class="row">
-			<div class="col s12" id="temp">
-			</div>
-		</div>
-		
-		<div id='info'></div></br>
-		<div id='artist'></div></br>
-		<div id='music'></div></br>
-		<img id='img' src=""/></br>
-		
-		<input type="text" id="formYTurl" placeholder="Youtube URL to play"></input>
-		<button id='add'>Add</button>
-
-		<button id='play'>
-			Play
-		</button>
-		<button id='pause'>
-			Pause
-		</button>
-		<button id='next'>
-			Next
-		</button>
-		<button id='prev'>
-			Prev
-		</button>
-
-		<button id='getPlaylist'>
-			Playlist
-		</button>
+		</footer>
 
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
-
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+		<!-- 
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.min.js"></script>
+		 -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
 
 		<script src="pulse.js"></script>

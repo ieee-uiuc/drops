@@ -16,6 +16,9 @@ vlc.stdin.setEncoding('utf-8');
 var vlcin = fs.createWriteStream("vlcin.txt");
 var vlcout = fs.createWriteStream("vlcout.txt");
 
+// The current queue
+var queue = [];
+
 // Returns a direct URL to the first audio stream for the video
 // TODO: also return the title, duration, etc
 function getInfo(url, cb) {
@@ -23,10 +26,19 @@ function getInfo(url, cb) {
 	ytdl.getInfo(url,
 				{"downloadURL":true},
 				function(err, info) {
+					var ret = {
+						thumbnail : info.iurlhq,
+						title : info.title,
+						duration : info.length_seconds,
+						audioURL : ''
+					}
+
 					var results = info.formats;
 					results.forEach(function(item) {
-						if ((item.type).indexOf("audio/mp4") > -1) 
-							cb(item.url);
+						if ((item.type).indexOf("audio/mp4") > -1) {
+							ret.audioURL = item.url;
+							cb(ret);
+						}
 					});
 	});
 }
@@ -77,12 +89,24 @@ io.on('connection', function(socket){
 
 	// Add a song to the playlist
 	socket.on('addSong', function(data) {
-		getInfo(data.url, function(audioURL) {
-			rcVLC('enqueue ' + audioURL, function(out) {
-				console.log(out);
-			});
+		getInfo(data.url, function(info) {
+			queue.push(info);
+			rcVLC('enqueue ' + info.audioURL);
 		});
 	});
+
+	// Add a song to the playlist
+	socket.on('removeSong', function(data) {
+		getInfo(data.url, function(info) {
+			rcVLC('enqueue ' + info.audioURL);
+		});
+	});
+
+	// Clear the queue
+	socket.on('clearPlaylist', function(data) {
+		queue = [];
+		rcVLC('clear');
+	})
 
 	// Commands
 	socket.on('control', function(data) {

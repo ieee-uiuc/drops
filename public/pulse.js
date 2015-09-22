@@ -6,23 +6,24 @@ function updateQueue() {
 		$('#queue').html('');
 
 		$.each(data, function(index, song) {
-			songHTML = '<div class="row"><div class="col s4"><img class="responsive-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '</div><div class="col s2">' + song.duration + '</div></div>';
+			songHTML = '<div class="row"><div class="col s4"><img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '</div><div class="col s2">' + song.duration + '</div></div>';
 			$('#queue').append(songHTML);
 		});
 	});
 }
 
-$('#add').click(function() {
-	socket.emit('addSong', { url : $('#formYTurl').val() }, function() {
+// id is youtube video id
+function addSong(id) {
+	socket.emit('addSong', { id : id }, function() {
 		updateQueue();
 	});
-});
+}
 
-// $('#prev').click(function() {
-// 	socket.emit('control', {
-// 		command : 'prev'
-// 	});
-// });
+$('#prev').click(function() {
+	socket.emit('control', {
+		command : 'prev'
+	});
+});
 
 $('#play').click(function() {
 	socket.emit('control', {

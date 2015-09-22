@@ -18,16 +18,32 @@
 			<!-- Youtube search and queue -->
 			<div class="row">
 				<!-- YouTube Search -->
-				<div class="col s12 m6 l9"> 
+				<div class="col s12 m6 l9" id="searchContainer"> 
 					<h1>SEARCH</h1>
-					<input type="text" id="formYTurl" placeholder="Youtube URL to play"></input>
-					<button class="waves-effect waves-light btn" id='add'>
-						Add
-					</button>
+
+					<div class="row" id="youtube">
+
+						<div class="row">
+							<div class="col s8">
+								<input id="query" placeholder="YouTube Search: Keyword or URL" type="text"/>
+							</div>
+							<div class="col s4">
+								<button class="waves-effect waves-light btn" id="search-button" disabled onclick="search()">
+									Search
+								</button>
+							</div>
+						</div>
+
+						<div class="row" id="search-results">
+
+						</div>
+
+					</div>
+
 				</div>
 
 				<!-- queue -->
-				<div class="col s12 m6 l3"> 
+				<div class="col s12 m6 l3" id="queueContainer"> 
 					<h1>QUEUE</h1>
 					<div id="queue">
 					</div>
@@ -45,9 +61,9 @@
 
 				<!-- Media Controls -->
 				<div class="col s8 center-align">
-<!-- 					<button class="waves-effect waves-light btn" id="prev">
+					<button class="waves-effect waves-light btn" id="prev">
 						<i class="large material-icons">skip_previous</i>
-					</button> -->
+					</button>
 					<button class="waves-effect waves-light btn" id="play">
 						<i class="large material-icons">play_arrow</i>
 					</button>
@@ -74,6 +90,10 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.min.js"></script>
 		 -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
+
+		<!--<script src="auth.js"></script>-->
+		<script src="search.js"></script>
+    	<script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
 
 		<script src="pulse.js"></script>
 		

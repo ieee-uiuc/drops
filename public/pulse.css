@@ -7,7 +7,16 @@ body {
 main {
 	flex: 1 0 auto;
 }
+
+.thumbnail-img {
+	width: 128px;
+}
  
 #queue {
 	overflow-y: auto;
+}
+
+#queueContainer {
+	height: 80vh;
+    border-left: solid thick #000000;
 }

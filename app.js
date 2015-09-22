@@ -8,6 +8,10 @@ var fs = require('fs');
 // Total current user counter
 var numUsers = 0;
 
+// Now Playing status
+// could use vlc is_playing
+var playing = false;
+
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
 vlc.stdin.setEncoding('utf-8');
@@ -16,13 +20,19 @@ vlc.stdin.setEncoding('utf-8');
 var vlcin = fs.createWriteStream("vlcin.txt");
 var vlcout = fs.createWriteStream("vlcout.txt");
 
+// Queue log
+var queueLog = fs.createWriteStream("queueLog.txt");
+
 // The current queue
 var queue = [];
 
 // Returns a direct URL to the first audio stream for the video
 // TODO: also return the title, duration, etc
-function getInfo(url, cb) {
+function getInfo(id, cb) {
 	var ytdl = require('ytdl-core');
+	var BASE = "http://www.youtube.com/watch?v=";
+	var url = BASE + id;
+	console.log("Video URL: " + url);
 	ytdl.getInfo(url,
 				{"downloadURL":true},
 				function(err, info) {
@@ -48,7 +58,7 @@ function getInfo(url, cb) {
 // Need to fix the logging so it doesn't do the full stdout every time
 function rcVLC(command) {
 	var toWrite = command + "\n";
-	vlcin.write(toWrite + "\n");
+	vlcin.write(toWrite);
 	vlc.stdin.write(toWrite);
 
 	vlc.stdout.on('data', function(data) {
@@ -90,21 +100,24 @@ io.on('connection', function(socket){
 	});
 
 	// Add a song to the playlist
+	// "Returns" the current queue
 	socket.on('addSong', function(data, fn) {
-		getInfo(data.url, function(info) {
+		getInfo(data.id, function(info) {
 			queue.push(info);
 			rcVLC('enqueue ' + info.audioURL);
-			console.log("Adding song: " + info.title);
+			queueLog.write("Adding song: " + info.title + '\n');
 			fn();
 		});
 	});
 
-	// Add a song to the playlist
-	socket.on('removeSong', function(data) {
-		getInfo(data.url, function(info) {
-			rcVLC('enqueue ' + info.audioURL);
-		});
-	});
+	// Remove a song to the playlist
+	// VLC doesn't have anything for this
+	// could use our queue, and only add to VLC as they get popped off from our queue
+	// socket.on('removeSong', function(data) {
+	// 	getInfo(data.id, function(info) {
+	// 		rcVLC('enqueue ' + info.audioURL);
+	// 	});
+	// });
 
 	// Returns the current playlist
 	socket.on('getQueue', function(fn) {
@@ -121,8 +134,12 @@ io.on('connection', function(socket){
 	socket.on('control', function(data,fn) {
 		switch(data.command) {
 			case "play":
+				rcVLC("play");
+				playing = true;
+				break;
 			case "pause":
-				rcVLC(data.command);
+				rcVLC("pause");
+				playing = false;
 				break;
 			case "next":
 				rcVLC(data.command);

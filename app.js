@@ -32,7 +32,6 @@ function getInfo(id, cb) {
 	var ytdl = require('ytdl-core');
 	var BASE = "http://www.youtube.com/watch?v=";
 	var url = BASE + id;
-	console.log("Video URL: " + url);
 	ytdl.getInfo(url,
 				{"downloadURL":true},
 				function(err, info) {

@@ -8,15 +8,20 @@ main {
 	flex: 1 0 auto;
 }
 
+.page-footer {
+	position: fixed;
+	width: 100%;
+	height: 10vh;
+	left: 0px;
+	bottom: 0px;
+	z-index: 10;
+}
+
 .thumbnail-img {
 	width: 128px;
 }
- 
-#queue {
-	overflow-y: auto;
-}
 
-#queueContainer {
-	height: 80vh;
-    border-left: solid thick #000000;
+header nav, footer.page-footer {
+	background-color: #143646;
+	color: #F3F3F3;
 }

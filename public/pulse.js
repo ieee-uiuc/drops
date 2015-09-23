@@ -18,6 +18,7 @@ function updateQueue() {
 function addSong(id) {
 	socket.emit('addSong', { id : id }, function() {
 		updateQueue();
+		Materialize.toast('Song added!', 4000);
 	});
 }
 

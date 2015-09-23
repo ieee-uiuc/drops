@@ -45,6 +45,19 @@ $('#next').click(function() {
 	});
 });
 
+$('#volUp').click(function() {
+	socket.emit('control', { command : 'volUp'});
+});
+
+$('#volDown').click(function() {
+	socket.emit('control', { command : 'volDown'});
+});
+
+$('#clear').click(function() {
+	socket.emit('clearQueue');
+});
+
+
 // when numUsers updates
 socket.on('numUsersChanged', function(data) {
 	$('#numUsers').text(data.newNumUsers);

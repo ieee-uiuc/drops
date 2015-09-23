@@ -142,8 +142,17 @@ io.on('connection', function(socket){
 				break;
 			case "next":
 				rcVLC(data.command);
-				queue.shift();
+				var pop = queue.shift();
+				if (!pop) {
+					rcVLC('clear');
+				}
 				fn();
+				break;
+			case "volUp":
+				rcVLC('volup 5');
+				break;
+			case "volDown":
+				rcVLC('voldown 5');
 				break;
 			default: 
 				console.log("Invalid command");

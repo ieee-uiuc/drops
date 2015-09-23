@@ -1,4 +1,4 @@
-var socket = io();
+var socket = io('http://ecerso.party:8080');
 
 function updateQueue() {
 	socket.emit('getQueue', function(data) {

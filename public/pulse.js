@@ -55,6 +55,7 @@ $('#volDown').click(function() {
 
 $('#clear').click(function() {
 	socket.emit('clearQueue');
+	$('#queue').html('');
 });
 
 

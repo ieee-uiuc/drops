@@ -149,10 +149,10 @@ io.on('connection', function(socket){
 				fn();
 				break;
 			case "volUp":
-				rcVLC('volup 5');
+				rcVLC('volup 1');
 				break;
 			case "volDown":
-				rcVLC('voldown 5');
+				rcVLC('voldown 1');
 				break;
 			default: 
 				console.log("Invalid command");

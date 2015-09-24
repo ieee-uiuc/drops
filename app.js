@@ -69,6 +69,7 @@ function rcVLC(command) {
 rcVLC("repeat off");
 rcVLC("loop off");
 rcVLC("random off");
+rcVLC("volup 2");
 
 // if you do port 80, you need sudo, but vlc won't run with sudo...
 var port = 8080;

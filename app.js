@@ -38,7 +38,7 @@ function getInfo(id, cb) {
 					var ret = {
 						thumbnail : info.iurlhq,
 						title : info.title,
-						duration : (info.length_seconds/60) + ':' + (info.length_seconds%60),
+						duration : Math.floor(info.length_seconds/60) + ':' + (info.length_seconds%60),
 						audioURL : '',
 						score: 0
 					}

@@ -51,11 +51,30 @@ socket.on('queueUpdated', function(data) {
 	$('#queue').html('');
 
 	$.each(data.newQueue, function(index, song) {
+		var songHTML = '<div class="row"> \
+					        <div class="col s12 m4"> \
+					          <div class="card small"> \
+					            <div class="card-image"> \
+					              <img src="' + song.thumbnail + '"> \
+					              <span class="card-title">' + song.title + '</span> \
+					            </div> \
+					            <div class="card-content"> \
+					              <p>' + song.duration + '</p> \
+					            </div> \
+					            <div class="card-action"> \
+					            	<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></button> \
+									<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></button> \
+					            </div> \
+					          </div> \
+					        </div> \
+					      </div>' ;
+
 		songHTML = '<div class="row"><div class="col s4"> \
 			<img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '<br><b>' + song.duration + '</b></div><div class="col s2"> \
 			<button class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></button> \
 			<button class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></button> \
 			</div></div>';
+
 		$('#queue').append(songHTML);
 	});
 });

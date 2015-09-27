@@ -50,18 +50,20 @@ function ytSearch() {
 			if (item.id.kind === "youtube#video") {
 				var videoID = item.id.videoId;
 
-				html = '<div class="row"> \
-									<div class="col s2"> \
-										<img class="responsive-img thumbnail-img" src="' + item.snippet.thumbnails.high.url + '"/> \
-									</div> \
-									<div class="col s8"> \
-										<h5>' + item.snippet.title + '</h5> \
-										<p>' + item.snippet.description + '</p> \
-									</div> \
-									<div class="col s2"> \
-										<button onclick="addSong(\'' + videoID + '\')"class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">add</i></button> \
-									</div> \
-								</div>';
+				html = '<div class="col s12 m4"> \
+					          <div class="card medium"> \
+					            <div class="card-image"> \
+					              <img src="' + item.snippet.thumbnails.high.url + '"> \
+					              <span class="card-title">' + item.snippet.title + '</span> \
+					            </div> \
+					            <div class="card-content"> \
+					              <p>' + item.snippet.description + '</p> \
+					            </div> \
+					            <div class="card-action"> \
+					              <a href="#" onclick="addSong(\'' + videoID + '\')">Add song to queue</a> \
+					            </div> \
+					          </div> \
+					        </div>' ;
 
 			$('#search-results').append(html);
 			$('#searchContainer').fadeIn('fast');

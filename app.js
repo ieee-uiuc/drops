@@ -63,15 +63,24 @@ function getInfo(id, cb) {
 	});
 }
 
-// Remove a song from the queue
-function removeSong(id) {
+// Returns false if the song is not in the queue, or the index if it is
+function songIndexInQueue(id) {
 	queue.forEach(function (queueItem, index) {
-		if (queueItem.id === song.id) {
-			queue.splice(index, 1);
-			sendQueue();
-			return;
+		if (queueItem.id === id) {
+			return index;
 		}
 	});
+
+	return false;
+}
+
+// Remove a song from the queue
+function removeSong(id) {
+	var index = songIndexInQueue(id);
+	if (!index) {
+		queue.splice(index,1);
+		sendQueue();
+	}
 }
 
 // Should return the output from stdout via callback
@@ -127,27 +136,27 @@ io.on('connection', function (socket){
 	socket.on('addSong', function (data, fn) {
 		getInfo(data.id, function (song) {
 
+			// Check if the song is already in the queue
+			var index = songIndexInQueue(song.id);
+
 			// If the request song is more than 10 minutes, don't allow it to be added to the queue. This is to prevent those 10 hour mixes.
 			if (song.length_seconds > 600) {
 				fn('Sorry, that song is too long!');
 				return;
 			}
 
-			// now check if the song is already in the queue
-			// for some reason this is still adding it to the queue
-			queue.forEach(function (queueItem, index) {
-				if (queueItem.id === song.id) {
-					fn('That song is already in the queue!');
-					return;
-				}
-			});
+			// Prevent adding the song if it's already in the queue
+			else if (!index) {
+				fn('That song is already in the queue!');
+			}
 
 			// otherwise, add the song
-			queue.push(song);
-			//rcVLC('enqueue ' + song.audioURL);
-			queueLog.write("Adding song: " + song.title + '\n');
-			sendQueue();
-			fn('Song added!');
+			else {
+				queue.push(song);
+				queueLog.write("Adding song: " + song.title + '\n');
+				sendQueue();
+				fn('Song added!');
+			}
 		});
 	});
 

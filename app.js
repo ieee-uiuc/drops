@@ -44,6 +44,7 @@ function getInfo(id, cb) {
 						url : url,
 						thumbnail : info.iurlhq,
 						title : info.title,
+						length_seconds : info.length_seconds,
 						duration : Math.floor(info.length_seconds/60) + ':' + (info.length_seconds%60),
 						audioURL : '',
 						nowPlaying : false,
@@ -133,9 +134,10 @@ io.on('connection', function (socket){
 			}
 
 			// now check if the song is already in the queue
+			// for some reason this is still adding it to the queue
 			queue.forEach(function (queueItem, index) {
 				if (queueItem.id === song.id) {
-					fn('That song is already in the queue!')
+					fn('That song is already in the queue!');
 					return;
 				}
 			});

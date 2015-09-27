@@ -16,12 +16,12 @@
 				<div class="nav-wrapper">
 					<div class="row">
 						<form class="col s12" action="javascript:ytSearch()">
-							<div class="row">
-								<div class="input-field col s8 l10 left-align">
+							<div class="row valign-wrapper">
+								<div class="input-field col s10 left-align">
 									<input type="text" id="query" placeholder="YouTube Search"/>
 								</div>
-								<div class="input-field col s4 l2 right-align">
-									<button class="waves-light btn-flat waves-orange orange-text" id="search-button" disabled><i class="material-icons">search</i></button>
+								<div class="input-field col s2 right-align">
+									<i onclick="ytSearch()" class="large material-icons orange-text" id="search-button">search</i>
 								</div>
 							</div>
 						</form>
@@ -62,19 +62,17 @@
 		<footer class="page-footer">
 			<div class="row valign-wrapper">
 				<!-- Number of users -->
-				<div class="col s3 l2 left-align">
+				<div class="col s3 left-align valign">
 					<h6><span id="numUsers">0</span> users</h6>
 				</div>
 
 				<!-- Media Controls -->
-				<div class="col s9 l10 right-align">
-					<button class="waves-effect waves-light btn-flat waves-orange orange-text" id="play_pause">
-						<i id="play_icon" class="material-icons">play_arrow</i>
-					</button>
+				<div class="col s6 center-align valign">
+					<i id="play_pause" class="medium material-icons orange-text">play_arrow</i>
+					<i id="next" class="medium material-icons orange-text">skip_next</i>
+				</div>
 
-					<button class="waves-effect waves-light btn-flat waves-orange orange-text" id="next">
-						<i class="material-icons">skip_next</i>
-					</button>
+				<div class="col s3 right-align valign">
 				</div>
 
 			</div>

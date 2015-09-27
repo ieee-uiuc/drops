@@ -1,10 +1,18 @@
-.page-footer {
+footer.page-footer {
 	position: fixed;
 	width: 100%;
 	left: 0px;
 	bottom: 0px;
 	z-index: 10;
 	height: 10vh;
+	margin-top: 0;
+	padding-top: 0;
+}
+
+footer.page-footer .row {
+	margin-bottom: 0;
+	padding-bottom: 0;
+	height: 100%;
 }
 
 main {
@@ -26,4 +34,8 @@ header nav, footer.page-footer {
 
 .downvote {
 	color: #F44336 !important;
+}
+
+#play_pause, #next, #search-button {
+	cursor: pointer;
 }

@@ -37,12 +37,12 @@ socket.on('nowPlayingChanged', function(data) {
 	// If the system is currently playing, the button icon should be pause
 	if (data.newNowPlaying) {
 		playing = true;
-		$('#play_icon').html('pause');
+		$('#play_pause').html('pause');
 	}
 	// If the system is currently paused, the button icon should be play
 	else {
 		playing = false;
-		$('#play_icon').html('play_arrow');
+		$('#play_pause').html('play_arrow');
 	}
 });
 
@@ -68,6 +68,7 @@ socket.on('numUsersChanged', function(data) {
 
 // The socket is going to send the updated now playing status, which is handled by the function above
 $('#play_pause').click(function() {
+	alert('clikced');
 	// If the system is currently playing, the pause button is displayed, so command should be pause
 	if (playing) {
 		socket.emit('pause');

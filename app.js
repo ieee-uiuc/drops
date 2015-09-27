@@ -15,11 +15,11 @@ var numUsers = 0;
 var playing = false;
 
 // Create the remote controlled VLC process
-//var vlc = spawn('vlc', ['-I', 'rc']);
-//vlc.stdin.setEncoding('utf-8');
-// vlc.stdout.on('data', function (data) {
-// 	vlcout.write(data.toString());
-// });
+var vlc = spawn('vlc', ['-I', 'rc']);
+vlc.stdin.setEncoding('utf-8');
+vlc.stdout.on('data', function (data) {
+	vlcout.write(data.toString());
+});
 
 // VLC input/output logs
 var vlcin = fs.createWriteStream("vlcin.txt");
@@ -78,7 +78,7 @@ function removeSong(id) {
 function rcVLC(command) {
 	var toWrite = command + "\n";
 	vlcin.write(toWrite);
-	//vlc.stdin.write(toWrite);
+	vlc.stdin.write(toWrite);
 }
 
 // Set repeat, loop, and random to off

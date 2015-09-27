@@ -65,13 +65,16 @@ function getInfo(id, cb) {
 
 // Returns false if the song is not in the queue, or the index if it is
 function songIndexInQueue(id) {
-	queue.forEach(function (queueItem, index) {
-		if (queueItem.id === id) {
-			return index;
-		}
-	});
+	var ret = false;
 
-	return false;
+	for (var i = 0; i < queue.length; i++) {
+		if (queue[i].id == id) {
+			ret = i;
+			break;
+		}
+	}
+
+	return ret;
 }
 
 // Remove a song from the queue
@@ -135,18 +138,16 @@ io.on('connection', function (socket){
 	// This would fail if the song was too long, if it's already in the queue, or some error occurred
 	socket.on('addSong', function (data, fn) {
 		getInfo(data.id, function (song) {
-
 			// Check if the song is already in the queue
 			var index = songIndexInQueue(song.id);
 
 			// If the request song is more than 10 minutes, don't allow it to be added to the queue. This is to prevent those 10 hour mixes.
 			if (song.length_seconds > 600) {
 				fn('Sorry, that song is too long!');
-				return;
 			}
 
 			// Prevent adding the song if it's already in the queue
-			else if (!index) {
+			else if (index !== false) {
 				fn('That song is already in the queue!');
 			}
 

@@ -1,26 +1,62 @@
-var socket = io(window.location.protocol + window.location.hostname + ':8080');
+// add events like play status, volume, playlist, etc changed
 
-function updateQueue() {
-	socket.emit('getQueue', function(data) {
-		var songHTML = '';
-		$('#queue').html('');
+var socketPath = window.location.hostname + ':8080';
+console.log("Connecting to : " + socketPath);
+var socket = io(socketPath);
 
-		$.each(data, function(index, song) {
-			songHTML = '<div class="row"><div class="col s4"><img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '<br><b>' + song.duration + '</b></div><div class="col s2"><a class="btn-floating btn waves-effect waves-light red"><i class="material-icons">thumb_down</i></a></div></div>';
-			$('#queue').append(songHTML);
-		});
-	});
+// Global now playing variable. Should always match the backend system now playing variable
+var playing = false;
+
+/* USER INTERACTIONS */
+
+// Downvote a song, disable vote buttons for that song for current user
+function downvote(id) {
+	// stuff
 }
 
-// either all APIs should call updateQueue or all should expect the updated queue to come back in the response
+// Upvote a song, disable vote buttons for that song for current user
+function upvote(id) {
+	// stuff
+}
 
 // id is youtube video id
 function addSong(id) {
-	socket.emit('addSong', { id : id }, function() {
-		updateQueue();
-		Materialize.toast('Song added!', 4000);
+	socket.emit('addSong', { id : id }, function(response) {
+		Materialize.toast(response, 4000);
 	});
 }
+
+/* INCOMING EVENTS */
+
+// Now Playing status changed
+socket.on('nowPlayingChanged', function(data) {
+	// If the system is currently playing, the button icon should be pause
+	if (data.newNowPlaying) {
+		playing = true;
+		$('#play_icon').html('pause');
+	}
+	// If the system is currently paused, the button icon should be play
+	else {
+		playing = false;
+		$('#play_icon').html('play_arrow');
+	}
+});
+
+// When the queue updates
+socket.on('queueUpdated', function(data) {
+	var songHTML = '';
+	$('#queue').html('');
+
+	$.each(data.newQueue, function(index, song) {
+		songHTML = '<div class="row"><div class="col s4"><img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '<br><b>' + song.duration + '</b></div><div class="col s2"><button class="btn-floating btn-flat waves-effect waves-light"><i class="material-icons upvote">thumb_up</i></button><button class="btn-floating btn-flat waves-effect waves-light"><i class="material-icons downvote">thumb_down</i></button></div></div>';
+		$('#queue').append(songHTML);
+	});
+});
+
+// when numUsers updates
+socket.on('numUsersChanged', function(data) {
+	$('#numUsers').text(data.newNumUsers);
+});
 
 $('#prev').click(function() {
 	socket.emit('control', {
@@ -28,17 +64,17 @@ $('#prev').click(function() {
 	});
 });
 
-$('#play').click(function() {
-	socket.emit('control', {
-		command : 'play'
-	});
+// The socket is going to send the updated now playing status, which is handled by the function above
+$('#play_pause').click(function() {
+	// If the system is currently playing, the pause button is displayed, so command should be pause
+	if (playing) {
+		socket.emit('pause');
+	}
+	else {
+		socket.emit('play');
+	}
 });
 
-$('#pause').click(function() {
-	socket.emit('control', {
-		command : 'pause'
-	});
-});
 
 $('#next').click(function() {
 	socket.emit('control', { command : 'next' }, function() {
@@ -46,24 +82,7 @@ $('#next').click(function() {
 	});
 });
 
-$('#volUp').click(function() {
-	socket.emit('control', { command : 'volUp'});
-});
-
-$('#volDown').click(function() {
-	socket.emit('control', { command : 'volDown'});
-});
-
-$('#clear').click(function() {
-	socket.emit('clearQueue');
-	$('#queue').html('');
-});
-
-
-// when numUsers updates
-socket.on('numUsersChanged', function(data) {
-	$('#numUsers').text(data.newNumUsers);
-});
-
-// add events like play status, volume, playlist, etc changed
-updateQueue();
+// $('#clear').click(function() {
+// 	socket.emit('clearQueue');
+// 	$('#queue').html('');
+// });

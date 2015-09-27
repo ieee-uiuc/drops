@@ -39,6 +39,7 @@ function getInfo(id, cb) {
 	ytdl.getInfo(url,
 				{"downloadURL":true},
 				function (err, info) {
+					// TODO: handle err, or if info is undefined/empty to prevent some edge cases of older youtube videos that don't have audio streams
 					var ret = {
 						id : id,
 						url : url,
@@ -228,6 +229,7 @@ io.on('connection', function (socket){
 		if (index) {
 			queue[index].score += data.vote;
 			sortQueue(sendQueue);
+			fn();
 		}
 	})
 

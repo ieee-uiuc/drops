@@ -18,8 +18,7 @@ var playing = false;
 // Upvote/downvote a song, disable vote buttons for that song for current user
 function vote(id, vote) {
 	socket.emit('vote', { id : id, vote : vote}, function() {
-		// remove vote buttons
-		$('.voteButton').hide();
+		$('.voteButton-' + id).hide();
 	});
 }
 
@@ -54,8 +53,8 @@ socket.on('queueUpdated', function(data) {
 	$.each(data.newQueue, function(index, song) {
 		songHTML = '<div class="row"><div class="col s4"> \
 			<img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '<br><b>' + song.duration + '</b></div><div class="col s2"> \
-			<button class="btn-floating btn-flat waves-effect waves-light voteButton" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></button> \
-			<button class="btn-floating btn-flat waves-effect waves-light voteButton" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></button> \
+			<button class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></button> \
+			<button class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></button> \
 			</div></div>';
 		$('#queue').append(songHTML);
 	});
@@ -68,7 +67,6 @@ socket.on('numUsersChanged', function(data) {
 
 // The socket is going to send the updated now playing status, which is handled by the function above
 $('#play_pause').click(function() {
-	alert('clikced');
 	// If the system is currently playing, the pause button is displayed, so command should be pause
 	if (playing) {
 		socket.emit('pause');

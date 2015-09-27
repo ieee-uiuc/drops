@@ -11,8 +11,8 @@ app.listen(8080);
 var numUsers = 0;
 
 // Now Playing status
-// could use vlc is_playing
 var playing = false;
+var stopped = true;
 
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
@@ -136,6 +136,41 @@ function sendNowPlaying() {
 	io.emit('nowPlayingChanged', {newNowPlaying : playing});
 }
 
+function sendAll() {
+	sendNumUsers();
+	sendQueue();
+	sendNowPlaying();
+}
+
+// Go to next song
+function nextSong() {
+	rcVLC('clear');
+
+	// If the queue length is 0, do nothing
+	if (queue.length == 0)
+		return;
+
+	// Since we're going to the next song, pop the current one off, and start the new one. but what if there's only one song...
+
+	// Only if the queue has more than one song, pop off the currentlly playing one
+	// If there was only one song in the queue (like at the very first play), then nothing would ever play
+	if (queue.length > 1)
+		queue.shift();
+
+	var nextSong = queue[0];
+
+	// Add does enqueue and play
+	if (nextSong) {
+		rcVLC('add ' + nextSong.audioURL);
+		playing = true;
+		stopped = false;
+	}
+
+	// Send out updated queue and now playing status
+	sendQueue();
+	sendNowPlaying();
+}
+
 // APIs and socket interactions
 io.on('connection', function (socket){
 
@@ -177,6 +212,10 @@ io.on('connection', function (socket){
 				queueLog.write("Adding song: " + song.title + '\n');
 				sendQueue();
 				fn('Song added!');
+
+				// If nothing is currently playing, start playing the song that was just added
+				if (stopped)
+					nextSong();
 			}
 		});
 	});
@@ -207,18 +246,7 @@ io.on('connection', function (socket){
 
 	// Clear vlc's playlist, and add from the front of our queue
 	socket.on('next', function (data,fn) {
-		rcVLC('clear');
-
-		// Not sure if I want it to pop off the queue...
-		var nextSong = queue.shift();
-
-		// Add does enqueue and play
-		if (nextSong) {
-			rcVLC('add ' + nextSong.audioURL);
-		}
-
-		// Send out updated queue
-		sendQueue();
+		nextSong();
 	})
 
 });

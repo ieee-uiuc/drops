@@ -1,9 +1,11 @@
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+var app = require('http').createServer()
+var io = require('socket.io')(app);
 var spawn = require('child_process').spawn;
 var fs = require('fs');
+
+// Listen to WebSocket connections on port 80
+// if you do port 80, you need sudo, but vlc won't run with sudo...
+app.listen(8080);
 
 // Total current user counter
 var numUsers = 0;
@@ -44,6 +46,7 @@ function getInfo(id, cb) {
 					}
 
 					var results = info.formats;
+					// this might call the callback function more than once...
 					results.forEach(function(item) {
 						if ((item.type).indexOf("audio/mp4") > -1) {
 							ret.audioURL = item.url;
@@ -70,13 +73,6 @@ rcVLC("repeat off");
 rcVLC("loop off");
 rcVLC("random off");
 rcVLC("volup 2");
-
-// if you do port 80, you need sudo, but vlc won't run with sudo...
-var port = 8080;
-
-// The public site
-app.use(express.static('public'));
-server.listen(port);
 
 function broadcast(key, value) {
 	io.emit(key, value);

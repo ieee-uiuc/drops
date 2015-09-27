@@ -1,4 +1,4 @@
-var socket = io('http://ecerso.party:8080');
+var socket = io(window.location.protocol + window.location.hostname + ':8080');
 
 function updateQueue() {
 	socket.emit('getQueue', function(data) {

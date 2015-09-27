@@ -1,3 +1,8 @@
+Prereqs
+===========
+
+Apache, with DocumentRoot set to `path to pulse/public`
+
 How to setup
 ===========
 

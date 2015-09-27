@@ -86,6 +86,26 @@ function removeSong(id) {
 	}
 }
 
+// Removes any songs from the queue that have a score of -(numUsers/2)
+// Sorts the queue based on score of the songs
+function sortQueue(cb) {
+	queue.forEach(function (queueItem, index) {
+		if (queueItem.score < (-numUsers/2) ) {
+			queue.splice(index,1);
+		}
+	});
+
+	queue.sort(function(a,b) {
+		if (a.score < b.score)
+			return -1;
+		if (a.score > b.score)
+			return 1;
+		return 0;
+	});
+
+	cb();
+}
+
 // Should return the output from stdout via callback
 // Need to fix the logging so it doesn't do the full stdout every time
 function rcVLC(command) {
@@ -161,25 +181,15 @@ io.on('connection', function (socket){
 		});
 	});
 
-	// Decrement the score for that song
-	// if the new score is less than the half of numUsers, remove it from the queue
-	socket.on('downvote', function (data,fn) {
-		// use data.id, which is the unique youtube id
-	});
-
-	// Increment the score for that song 
-	// sort the queue by score
-	socket.on('upvote', function (data,fn) {
-		// use data.id, which is the unique youtube id
+	// Modifies the queue item's score based on what the user clicked
+	// Once that's done, it sorts the queue, then sends out an updated queue
+	socket.on('vote', function(data,fn) {
+		var index = songIndexInQueue(data.id);
+		if (index) {
+			queue[index].score += data.vote;
+			sortQueue(sendQueue);
+		}
 	})
-
-	// Clear the queue
-	socket.on('clearQueue', function (data) {
-		queue = [];
-		rcVLC('clear');
-	});
-
-	// when the playing status changes, broadcast out to everyone
 
 	/* MUSIC CONTROLS */
 
@@ -195,13 +205,15 @@ io.on('connection', function (socket){
 		sendNowPlaying();
 	});
 
+	// Clear vlc's playlist, and add from the front of our queue
 	socket.on('next', function (data,fn) {
-		// Clear vlc's playlist, and add from the front of our queue
 		rcVLC('clear');
+
+		// Not sure if I want it to pop off the queue...
 		var nextSong = queue.shift();
 
-		// Add does queue and play
-		if (!nextSong) {
+		// Add does enqueue and play
+		if (nextSong) {
 			rcVLC('add ' + nextSong.audioURL);
 		}
 

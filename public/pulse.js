@@ -1,28 +1,27 @@
-// add events like play status, volume, playlist, etc changed
+var socket = io(window.location.hostname + ':8080');
 
-var socketPath = window.location.hostname + ':8080';
-console.log("Connecting to : " + socketPath);
-var socket = io(socketPath);
+// By default, show the user it isn't connected, but once it has, allow the user to interact
+socket.on('connect', function() {
+	$('#queueContainer').html('<h2>QUEUE</h2><div id="queue"></div>');
+})
 
 // Global now playing variable. Should always match the backend system now playing variable
 var playing = false;
 
 /* USER INTERACTIONS */
 
-// Downvote a song, disable vote buttons for that song for current user
-function downvote(id) {
-	// stuff
-}
-
-// Upvote a song, disable vote buttons for that song for current user
-function upvote(id) {
-	// stuff
+// Upvote/downvote a song, disable vote buttons for that song for current user
+function vote(id, vote) {
+	socket.emit('vote', { id : id, vote : vote}, function() {
+		// remove vote buttons
+		$('.voteButton').hide();
+	};
 }
 
 // id is youtube video id
 function addSong(id) {
 	socket.emit('addSong', { id : id }, function(response) {
-		Materialize.toast(response, 4000);
+		Materialize.toast(response, 2500);
 	});
 }
 
@@ -48,7 +47,15 @@ socket.on('queueUpdated', function(data) {
 	$('#queue').html('');
 
 	$.each(data.newQueue, function(index, song) {
-		songHTML = '<div class="row"><div class="col s4"><img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '<br><b>' + song.duration + '</b></div><div class="col s2"><button class="btn-floating btn-flat waves-effect waves-light"><i class="material-icons upvote">thumb_up</i></button><button class="btn-floating btn-flat waves-effect waves-light"><i class="material-icons downvote">thumb_down</i></button></div></div>';
+		songHTML = '<div class="row"><div class="col s4"> \
+
+			<img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '<br><b>' + song.duration + '</b></div><div class="col s2">
+
+			<button class="btn-floating btn-flat waves-effect waves-light voteButton" onclick="vote(\'' + song.id + ', 1\')"><i class="material-icons upvote">thumb_up</i></button> \
+
+			<button class="btn-floating btn-flat waves-effect waves-light voteButton" onclick="vote(\'' + song.id + ', -1\')"><i class="material-icons downvote">thumb_down</i></button> \
+
+			</div></div>';
 		$('#queue').append(songHTML);
 	});
 });
@@ -56,12 +63,6 @@ socket.on('queueUpdated', function(data) {
 // when numUsers updates
 socket.on('numUsersChanged', function(data) {
 	$('#numUsers').text(data.newNumUsers);
-});
-
-$('#prev').click(function() {
-	socket.emit('control', {
-		command : 'prev'
-	});
 });
 
 // The socket is going to send the updated now playing status, which is handled by the function above
@@ -77,12 +78,5 @@ $('#play_pause').click(function() {
 
 
 $('#next').click(function() {
-	socket.emit('control', { command : 'next' }, function() {
-		updateQueue();
-	});
+	socket.emit('next');
 });
-
-// $('#clear').click(function() {
-// 	socket.emit('clearQueue');
-// 	$('#queue').html('');
-// });

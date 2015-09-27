@@ -95,10 +95,11 @@ function sortQueue(cb) {
 		}
 	});
 
+	// Sorts queue from highest to lowest score
 	queue.sort(function(a,b) {
-		if (a.score < b.score)
-			return -1;
 		if (a.score > b.score)
+			return -1;
+		if (a.score < b.score)
 			return 1;
 		return 0;
 	});

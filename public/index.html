@@ -22,6 +22,7 @@
 								</div>
 								<div class="input-field col s2 right-align">
 									<i onclick="ytSearch()" class="large material-icons orange-text" id="search-button">search</i>
+									<i onclick="closeSearchResults()" class="large material-icons orange-text" style="display:none" id="close-results-button">close</i>
 								</div>
 							</div>
 						</form>
@@ -36,11 +37,8 @@
 				<!-- Not displayed by default -->
 				<div class="col s12" id="searchContainer" style="display:none"> 
 					<div class="row">
-						<div class="col s10">
+						<div class="col s12">
 							<h2>SEARCH RESULTS</h2>
-						</div>
-						<div class="col s2 right-align">
-							<button onclick="closeSearchResults()"class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">close</i></button>
 						</div>
 					</div>
 					
@@ -60,6 +58,10 @@
 
 		<!-- Now Playing Controls -->
 		<footer class="page-footer">
+			<div class="range-field" hidden>
+				<input id="seekbar" type="range" id="test5" min="0" max="100" />
+			</div>
+
 			<div class="row valign-wrapper">
 				<!-- Number of users -->
 				<div class="col s3 left-align valign">

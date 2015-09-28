@@ -13,10 +13,15 @@ socket.on('disconnect', function() {
 // Global now playing variable. Should always match the backend system now playing variable
 var playing = false;
 
+var currElapsed = 0;
+var currSongLength = 0;
+
 /* USER INTERACTIONS */
 
 // Upvote/downvote a song, disable vote buttons for that song for current user
 function vote(id, vote) {
+	Materialize.toast('Sorry, voting is not available yet!', 2500);
+	return;
 	socket.emit('vote', { id : id, vote : vote}, function() {
 		$('.voteButton-' + id).hide();
 	});
@@ -50,30 +55,40 @@ socket.on('queueUpdated', function(data) {
 	var songHTML = '';
 	$('#queue').html('');
 
+	// Set up for the seekbar
+	if (data.newQueue.length > 0)
+		currSongLength = data.newQueue[0].length_seconds;
+	else
+		currSongLength = 0;
+
 	$.each(data.newQueue, function(index, song) {
 		var songHTML = '<div class="row"> \
-					        <div class="col s12 m4"> \
-					          <div class="card small"> \
+					        <div class="col s12 m6 offset-m3 l4 offset-l4"> \
+					          <div class="card medium"> \
 					            <div class="card-image"> \
 					              <img src="' + song.thumbnail + '"> \
 					              <span class="card-title">' + song.title + '</span> \
 					            </div> \
 					            <div class="card-content"> \
 					              <p>' + song.duration + '</p> \
+					              <p>Added by: ' + song.addedBy + '</p> \
 					            </div> \
-					            <div class="card-action"> \
-					            	<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></button> \
-									<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></button> \
-					            </div> \
-					          </div> \
-					        </div> \
-					      </div>' ;
+					            <div class="card-action">';
 
-		songHTML = '<div class="row"><div class="col s4"> \
-			<img class="responsive-img thumbnail-img" src="' + song.thumbnail + '"/></div><div class="col s6">' + song.title + '<br><b>' + song.duration + '</b></div><div class="col s2"> \
-			<button class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></button> \
-			<button class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></button> \
-			</div></div>';
+		// for the currently playing song, inform the user as such
+		if (index == 0) {
+			songHTML += '<h6>Now Playing</h6>';
+		}
+		// don't add vote buttons for the currently playing song
+		if (index > 0) {
+			songHTML += '<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></a> \
+						<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></a>'
+		}
+					            
+		songHTML += '</div> \
+					</div> \
+					</div> \
+					</div>' ;
 
 		$('#queue').append(songHTML);
 	});
@@ -99,3 +114,14 @@ $('#play_pause').click(function() {
 $('#next').click(function() {
 	socket.emit('next');
 });
+
+// If they press Esc, close the search results
+$(document).keyup(function(e) {
+	switch(e.which) {
+		case 27:
+			closeSearchResults();
+			break;
+		default:
+			return;
+	}
+})

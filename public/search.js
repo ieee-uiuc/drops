@@ -28,6 +28,12 @@ function ytSearch() {
 		// Fade out the queue temporarily
 		$('#queueContainer').fadeOut('fast');
 
+		// Replace the close results button with the search
+		$('#search-button').fadeOut('fast', function() {
+			$('#close-results-button').fadeIn('fast');
+		});
+
+
 		var q = $('#query').val();
 		var request = gapi.client.youtube.search.list({
 		q: q,
@@ -50,14 +56,14 @@ function ytSearch() {
 			if (item.id.kind === "youtube#video") {
 				var videoID = item.id.videoId;
 
-				html = '<div class="col s12 m4"> \
+				html = '<div class="col s12 m6 l4"> \
 					          <div class="card medium"> \
 					            <div class="card-image"> \
 					              <img src="' + item.snippet.thumbnails.high.url + '"> \
 					              <span class="card-title">' + item.snippet.title + '</span> \
 					            </div> \
 					            <div class="card-content"> \
-					              <p>' + item.snippet.description + '</p> \
+					              <p class="truncate">' + item.snippet.description + '</p> \
 					            </div> \
 					            <div class="card-action"> \
 					              <a href="#" onclick="addSong(\'' + videoID + '\')">Add song to queue</a> \
@@ -73,7 +79,14 @@ function ytSearch() {
 }
 
 function closeSearchResults() {
+	// Replace search results container with the queue
 	$('#searchContainer').fadeOut('fast', function() {
 		$('#queueContainer').fadeIn('fast');
+	});
+
+	// Replace the close results button with the search button
+	$('#close-results-button').fadeOut('fast', function() {
+		$('#query').val('');
+		$('#search-button').fadeIn('fast');
 	});
 }

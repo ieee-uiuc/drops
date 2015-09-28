@@ -3,6 +3,8 @@ var io = require('socket.io')(app);
 var spawn = require('child_process').spawn;
 var fs = require('fs');
 
+/* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
+
 // Listen to WebSocket connections on port 80
 // if you do port 80, you need sudo, but vlc won't run with sudo...
 app.listen(8080);
@@ -14,16 +16,23 @@ var numUsers = 0;
 var playing = false;
 var stopped = true;
 
+// This holds the number of seconds elapsed since the start of the current song
+var currElapsed = 0;
+var intervalObj;
+
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
 vlc.stdin.setEncoding('utf-8');
-vlc.stdout.on('data', function (data) {
-	vlcout.write(data.toString());
-});
+
+// Pipes the command to the VLC remote control interface
+function rcVLC(command) {
+	var toWrite = command + "\n";
+	vlcin.write(toWrite);
+	vlc.stdin.write(toWrite);
+}
 
 // VLC input/output logs
 var vlcin = fs.createWriteStream("vlcin.txt");
-var vlcout = fs.createWriteStream("vlcout.txt");
 
 // Queue log
 var queueLog = fs.createWriteStream("queueLog.txt");
@@ -39,14 +48,20 @@ function getInfo(id, cb) {
 	ytdl.getInfo(url,
 				{"downloadURL":true},
 				function (err, info) {
+					// Calculate and format duration properly
+					var seconds = info.length_seconds % 60;
+					if (seconds < 10) 
+						seconds = '0' + seconds;
+
 					// TODO: handle err, or if info is undefined/empty to prevent some edge cases of older youtube videos that don't have audio streams
 					var ret = {
 						id : id,
 						url : url,
 						thumbnail : info.iurlhq,
 						title : info.title,
+						addedBy : 'aagandh2',
 						length_seconds : info.length_seconds,
-						duration : Math.floor(info.length_seconds/60) + ':' + (info.length_seconds%60),
+						duration : Math.floor(info.length_seconds / 60) + ':' + seconds,
 						audioURL : '',
 						nowPlaying : false,
 						elapsed : 0,
@@ -78,20 +93,11 @@ function songIndexInQueue(id) {
 	return ret;
 }
 
-// Remove a song from the queue
-function removeSong(id) {
-	var index = songIndexInQueue(id);
-	if (!index) {
-		queue.splice(index,1);
-		sendQueue();
-	}
-}
-
-// Removes any songs from the queue that have a score of -(numUsers/2)
+// Removes any songs from the queue that have a score of -3
 // Sorts the queue based on score of the songs
 function sortQueue(cb) {
 	queue.forEach(function (queueItem, index) {
-		if (queueItem.score < (-numUsers/2) ) {
+		if (queueItem.score < -3 ) {
 			queue.splice(index,1);
 		}
 	});
@@ -108,12 +114,41 @@ function sortQueue(cb) {
 	cb();
 }
 
-// Should return the output from stdout via callback
-// Need to fix the logging so it doesn't do the full stdout every time
-function rcVLC(command) {
-	var toWrite = command + "\n";
-	vlcin.write(toWrite);
-	vlc.stdin.write(toWrite);
+// Go to next song
+function nextSong(first) {
+	clearInterval(intervalObj);
+	currElapsed = 0;
+	rcVLC('clear');
+
+	// If the queue length is 0, do nothing
+	if (queue.length == 0)
+		return;
+
+	if (!first)
+		queue.shift();
+	var nextSong = queue[0];
+
+	// If the queue is now empty
+	if (!nextSong) {
+		playing = false;
+		stopped = true;
+	}
+
+	// Add does enqueue and play
+	else {
+		rcVLC('add ' + nextSong.audioURL);
+		playing = true;
+		stopped = false;
+		
+		// Start incrementing elapsed every second
+		intervalObj = setInterval(function () {
+			currElapsed += 1;
+		}, 1000);
+	}
+
+	// Send out updated queue and now playing status
+	sendQueue();
+	sendNowPlaying();
 }
 
 // Set repeat, loop, and random to off
@@ -144,34 +179,15 @@ function sendAll() {
 	sendNowPlaying();
 }
 
-// Go to next song
-function nextSong() {
-	rcVLC('clear');
-
-	// If the queue length is 0, do nothing
-	if (queue.length == 0)
-		return;
-
-	// Since we're going to the next song, pop the current one off, and start the new one. but what if there's only one song...
-
-	// Only if the queue has more than one song, pop off the currentlly playing one
-	// If there was only one song in the queue (like at the very first play), then nothing would ever play
-	if (queue.length > 1)
-		queue.shift();
-
-	var nextSong = queue[0];
-
-	// Add does enqueue and play
-	if (nextSong) {
-		rcVLC('add ' + nextSong.audioURL);
-		playing = true;
-		stopped = false;
+// This checks if the current song is done playing, and if so, go to the next song
+// This should occur regardless of the other setIntervals
+var masterIntervalObj = setInterval(function () {
+	if ( (queue.length > 0) && (playing) && (!stopped) ) {
+		if (currElapsed >= queue[0].length_seconds) {
+			nextSong();
+		}
 	}
-
-	// Send out updated queue and now playing status
-	sendQueue();
-	sendNowPlaying();
-}
+}, 1000);
 
 // APIs and socket interactions
 io.on('connection', function (socket){
@@ -212,12 +228,13 @@ io.on('connection', function (socket){
 			else {
 				queue.push(song);
 				queueLog.write("Adding song: " + song.title + '\n');
+
 				sendQueue();
 				fn('Song added!');
 
 				// If nothing is currently playing, start playing the song that was just added
 				if (stopped)
-					nextSong();
+					nextSong(true);
 			}
 		});
 	});
@@ -236,12 +253,19 @@ io.on('connection', function (socket){
 	/* MUSIC CONTROLS */
 
 	socket.on('play', function (data, fn) {
+		// Start incrementing elapsed every second
+		intervalObj = setInterval(function () {
+			currElapsed += 1;
+		}, 1000);
+
 		rcVLC('play');
 		playing = true;
 		sendNowPlaying();
 	});
 
 	socket.on('pause', function (data, fn) {
+		clearInterval(intervalObj);
+
 		rcVLC('pause');
 		playing = false;
 		sendNowPlaying();

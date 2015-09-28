@@ -20,10 +20,9 @@ var currSongLength = 0;
 
 // Upvote/downvote a song, disable vote buttons for that song for current user
 function vote(id, vote) {
-	Materialize.toast('Sorry, voting is not available yet!', 2500);
-	return;
 	socket.emit('vote', { id : id, vote : vote}, function() {
-		$('.voteButton-' + id).hide();
+		$('.voteButton-' + id).fadeOut('fast');
+		Materialize.toast('Voted!', 2500);
 	});
 }
 

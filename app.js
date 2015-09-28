@@ -102,14 +102,19 @@ function sortQueue(cb) {
 		}
 	});
 
-	// Sorts queue from highest to lowest score
-	queue.sort(function(a,b) {
+	// Sort the queue, ignoring the now playing item
+	var tempQueue = queue.slice(1);
+	tempQueue.sort(function(a,b) {
 		if (a.score > b.score)
 			return -1;
 		if (a.score < b.score)
 			return 1;
 		return 0;
 	});
+
+	// Delete all of it except the currently playing one, and put the sorted part back in
+	queue.splice(1, queue.length-1);
+	queue = queue.concat(tempQueue);
 
 	cb();
 }

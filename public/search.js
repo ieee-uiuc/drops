@@ -38,6 +38,7 @@ function ytSearch() {
 		var request = gapi.client.youtube.search.list({
 		q: q,
 		part: 'snippet',
+		maxResults : 10,
 		key: 'AIzaSyBhZubf4N-jenWLm8aUQhkxjCc8_EMnEKA'
 	});
 

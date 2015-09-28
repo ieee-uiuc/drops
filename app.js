@@ -32,10 +32,10 @@ function rcVLC(command) {
 }
 
 // VLC input/output logs
-var vlcin = fs.createWriteStream("vlcin.txt");
+var vlcin = fs.createWriteStream("/home/pi/Desktop/vlcin.txt");
 
 // Queue log
-var queueLog = fs.createWriteStream("queueLog.txt");
+var queueLog = fs.createWriteStream("/home/pi/Desktop/queueLog.txt");
 
 // The current queue
 var queue = [];

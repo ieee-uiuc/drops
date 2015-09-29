@@ -195,6 +195,7 @@ var masterIntervalObj = setInterval(function () {
 }, 1000);
 
 // APIs and socket interactions
+// These are on a per user 
 io.on('connection', function (socket){
 
 	// Up the total current user counter
@@ -210,6 +211,13 @@ io.on('connection', function (socket){
 		numUsers--;
 		sendNumUsers();
 	});
+
+	socket.on('login', function(data, fn) {
+		
+
+		// if successfully logged in
+		fn ({success : true, token : token});
+	})
 
 	// Add a song to the queue
 	// "Returns" whether the song was successfully added or not

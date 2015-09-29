@@ -54,6 +54,28 @@
 					</div>
 				</div>
 			</div>
+
+			<div id="sign-in-modal" class="modal">
+				<div class="modal-content">
+					<div class="row">
+						<form class="col s12" action="javascript:login()">
+							<div class="row">
+								<div class="input-field col s12">
+									<input id="username" type="text" class="validate" maxlength="8" required>
+          							<label for="username">NetID</label>
+								</div>
+								<div class="input-field col s12">
+									<input id="password" type="password" class="validate" required>
+          							<label for="password">Password</label>
+								</div>
+								<div class="input-field col s12">
+									<button data-target="sign-in-modal" onclick="login()" class="btn">Sign In</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
 		</main>
 
 		<!-- Now Playing Controls -->
@@ -64,7 +86,7 @@
 
 			<div class="row valign-wrapper">
 				<!-- Number of users -->
-				<div class="col s3 left-align valign">
+				<div class="col s2 left-align valign">
 					<h6><span id="numUsers">0</span> users</h6>
 				</div>
 
@@ -74,7 +96,8 @@
 					<i id="next" class="medium material-icons orange-text">skip_next</i>
 				</div>
 
-				<div class="col s3 right-align valign">
+				<div class="col s4 right-align valign">
+					<a class="waves-effect waves-light btn modal-trigger" href="#sign-in-modal">SignIn</a>
 				</div>
 
 			</div>

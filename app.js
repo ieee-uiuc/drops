@@ -48,18 +48,22 @@ function getInfo(id, cb) {
 	ytdl.getInfo(url,
 				{"downloadURL":true},
 				function (err, info) {
+					// Error handling if ytdl couldn't get info for the request video
+					if (err || !info) {
+						cb('error');
+						return;
+					}
 					// Calculate and format duration properly
 					var seconds = info.length_seconds % 60;
 					if (seconds < 10) 
 						seconds = '0' + seconds;
 
-					// TODO: handle err, or if info is undefined/empty to prevent some edge cases of older youtube videos that don't have audio streams
 					var ret = {
 						id : id,
 						url : url,
 						thumbnail : info.iurlhq,
 						title : info.title,
-						addedBy : 'aagandh2',
+						addedBy : 'DJ Random',
 						length_seconds : info.length_seconds,
 						duration : Math.floor(info.length_seconds / 60) + ':' + seconds,
 						audioURL : '',
@@ -216,6 +220,11 @@ io.on('connection', function (socket){
 	// This would fail if the song was too long, if it's already in the queue, or some error occurred
 	socket.on('addSong', function (data, fn) {
 		getInfo(data.id, function (song) {
+			// Error handling
+			if (song === 'error') {
+				fn('Error adding song.');
+				return;
+			}
 			// Check if the song is already in the queue
 			var index = songIndexInQueue(song.id);
 

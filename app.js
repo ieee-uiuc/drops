@@ -258,7 +258,17 @@ io.on('connection', function (socket){
 	socket.on('vote', function(data,fn) {
 		var index = songIndexInQueue(data.id);
 		if (index) {
-			queue[index].score += data.vote;
+			// If data.vote is 0, don't do anything
+			if (data.vote == 0)
+				return;
+			// If it's is positive, increment the score
+			if (data.vote > 0)
+				queue[index].score += 1;
+			// If it's negative, decrement the score
+			else if (data.vote < 0)
+				queue[index].score -= 1;
+
+			// Sort
 			sortQueue(sendQueue);
 			fn();
 		}

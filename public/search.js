@@ -25,24 +25,28 @@ function handleAPILoaded() {
 
 // Search for a specified keywords.
 function ytSearch() {
-		// Fade out the queue temporarily
-		$('#queueContainer').fadeOut('fast');
+	// Fade out the queue temporarily
+	$('#queueContainer').fadeOut('fast');
 
-		// Replace the close results button with the search
-		$('#search-button').fadeOut('fast', function() {
-			$('#close-results-button').fadeIn('fast');
-		});
+	// Show spinner temporarily
+	$('#search-spinner').fadeIn('fast');
 
+	// Replace the close results button with the search
+	$('#search-button').fadeOut('fast', function() {
+		$('#close-results-button').fadeIn('fast');
+	});
 
-		var q = $('#query').val();
-		var request = gapi.client.youtube.search.list({
-		q: q,
+	var request = gapi.client.youtube.search.list({
+		q: $('#query').val();,
 		part: 'snippet',
 		maxResults : 10,
 		key: 'AIzaSyBhZubf4N-jenWLm8aUQhkxjCc8_EMnEKA'
 	});
 
   	request.execute(function(response) {
+  		// Hide spinner
+  		$('#search-spinner').fadeOut('fast');
+
 		// already json-parsed
 		var results = response.result.items;
 

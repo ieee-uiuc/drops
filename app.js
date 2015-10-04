@@ -1,7 +1,7 @@
 var app = require('http').createServer()
 var io = require('socket.io')(app);
 var spawn = require('child_process').spawn;
-var fs = require('fs');
+// var fs = require('fs');
 
 /* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
 
@@ -18,7 +18,7 @@ var stopped = true;
 
 // This holds the number of seconds elapsed since the start of the current song
 var currElapsed = 0;
-var intervalObj;
+var intervalObj, masterIntervalObj;
 
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
@@ -27,18 +27,29 @@ vlc.stdin.setEncoding('utf-8');
 // Pipes the command to the VLC remote control interface
 function rcVLC(command) {
 	var toWrite = command + "\n";
-	vlcin.write(toWrite);
 	vlc.stdin.write(toWrite);
 }
 
-// VLC input/output logs
-var vlcin = fs.createWriteStream("/home/pi/Desktop/vlcin.txt");
-
-// Queue log
-var queueLog = fs.createWriteStream("/home/pi/Desktop/queueLog.txt");
-
 // The current queue
 var queue = [];
+
+// Sets the song interval
+function setSongInterval() {
+	// TODO: fill this in
+}
+
+// Sets the master interval
+function setMasterInterval() {
+	// This checks if the current song is done playing, and if so, go to the next song
+	// This should occur regardless of the other setIntervals
+	masterIntervalObj = setInterval(function () {
+		if ( (queue.length > 0) && (playing) && (!stopped) ) {
+			if (currElapsed >= queue[0].length_seconds) {
+				nextSong();
+			}
+		}
+	}, 1000);
+}
 
 // Returns thumbnail url, title, duration, audio url, and sets score to 0
 function getInfo(id, cb) {
@@ -117,6 +128,7 @@ function sortQueue(cb) {
 	});
 
 	// Delete all of it except the currently playing one, and put the sorted part back in
+	// TODO: This part could be made more efficient
 	queue.splice(1, queue.length-1);
 	queue = queue.concat(tempQueue);
 
@@ -124,6 +136,7 @@ function sortQueue(cb) {
 }
 
 // Go to next song
+// TODO: Don't want masterInterval to keep incrementing while this is processing
 function nextSong(first) {
 	clearInterval(intervalObj);
 	currElapsed = 0;
@@ -188,15 +201,8 @@ function sendAll() {
 	sendNowPlaying();
 }
 
-// This checks if the current song is done playing, and if so, go to the next song
-// This should occur regardless of the other setIntervals
-var masterIntervalObj = setInterval(function () {
-	if ( (queue.length > 0) && (playing) && (!stopped) ) {
-		if (currElapsed >= queue[0].length_seconds) {
-			nextSong();
-		}
-	}
-}, 1000);
+// Set the master interval
+setMasterInterval();
 
 // APIs and socket interactions
 io.on('connection', function (socket){
@@ -272,7 +278,7 @@ io.on('connection', function (socket){
 			sortQueue(sendQueue);
 			fn();
 		}
-	})
+	});
 
 	/* MUSIC CONTROLS */
 

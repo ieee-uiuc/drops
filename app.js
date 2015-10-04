@@ -247,7 +247,6 @@ io.on('connection', function (socket){
 			// otherwise, add the song
 			else {
 				queue.push(song);
-				queueLog.write("Adding song: " + song.title + '\n');
 
 				sendQueue();
 				fn('Song added!');

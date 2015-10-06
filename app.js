@@ -33,15 +33,17 @@ function rcVLC(command) {
 // The current queue
 var queue = [];
 
-// Sets the song interval
+// Sets the song interval to increment currElapsed every second
 function setSongInterval() {
-	// TODO: fill this in
+	intervalObj = setInterval(function () {
+		currElapsed += 1;
+	}, 1000);
 }
 
 // Sets the master interval
+// This checks if the current song is done playing, and if so, go to the next song
+// This should occur regardless of the other setIntervals
 function setMasterInterval() {
-	// This checks if the current song is done playing, and if so, go to the next song
-	// This should occur regardless of the other setIntervals
 	masterIntervalObj = setInterval(function () {
 		if ( (queue.length > 0) && (playing) && (!stopped) ) {
 			if (currElapsed >= queue[0].length_seconds) {
@@ -74,17 +76,16 @@ function getInfo(id, cb) {
 						url : url,
 						thumbnail : info.iurlhq,
 						title : info.title,
-						addedBy : 'DJ Random',
+						addedBy : 'Someone',
 						length_seconds : info.length_seconds,
 						duration : Math.floor(info.length_seconds / 60) + ':' + seconds,
 						audioURL : '',
-						nowPlaying : false,
-						elapsed : 0,
 						score: 0
 					}
 
 					var results = info.formats;
 					// this might call the callback function more than once...
+					// TODO: change this to an actual for loop, then break out after the callback
 					results.forEach(function (item) {
 						if ((item.type).indexOf("audio/mp4") > -1) {
 							ret.audioURL = item.url;
@@ -135,10 +136,11 @@ function sortQueue(cb) {
 	cb();
 }
 
-// Go to next song
+// Go to next song by clearing vlc's playlist, and add from the front of our queue
 // TODO: Don't want masterInterval to keep incrementing while this is processing
 function nextSong(first) {
 	clearInterval(intervalObj);
+	clearInterval(masterIntervalObj);
 	currElapsed = 0;
 	rcVLC('clear');
 
@@ -146,6 +148,7 @@ function nextSong(first) {
 	if (queue.length == 0)
 		return;
 
+	// If this is the first song being played, just get the front, don't shift
 	if (!first)
 		queue.shift();
 	var nextSong = queue[0];
@@ -163,9 +166,8 @@ function nextSong(first) {
 		stopped = false;
 		
 		// Start incrementing elapsed every second
-		intervalObj = setInterval(function () {
-			currElapsed += 1;
-		}, 1000);
+		setSongInterval();
+		setMasterInterval();
 	}
 
 	// Send out updated queue and now playing status
@@ -283,10 +285,7 @@ io.on('connection', function (socket){
 
 	socket.on('play', function (data, fn) {
 		// Start incrementing elapsed every second
-		intervalObj = setInterval(function () {
-			currElapsed += 1;
-		}, 1000);
-
+		setSongInterval();
 		rcVLC('play');
 		playing = true;
 		sendNowPlaying();
@@ -294,13 +293,11 @@ io.on('connection', function (socket){
 
 	socket.on('pause', function (data, fn) {
 		clearInterval(intervalObj);
-
 		rcVLC('pause');
 		playing = false;
 		sendNowPlaying();
 	});
 
-	// Clear vlc's playlist, and add from the front of our queue
 	socket.on('next', function (data,fn) {
 		nextSong();
 	})

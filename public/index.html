@@ -10,7 +10,6 @@
 	</head>
 
 	<body class="blue-grey lighten-5">
-		<!-- Links to RSOs or something -->
 		<header class="navbar-fixed">
 			<nav>
 				<div class="nav-wrapper">
@@ -57,22 +56,59 @@
 
 			<div id="sign-in-modal" class="modal">
 				<div class="modal-content">
-					<div class="row">
-						<form class="col s12" action="javascript:login()">
-							<div class="row">
-								<div class="input-field col s12">
-									<input id="username" type="text" class="validate" maxlength="8" required>
-          							<label for="username">NetID</label>
+			  		<div class="row">
+						<div class="col s12">
+							<ul class="tabs">
+								<li class="tab col s3"><a class="active" href="#tab-signin">Sign In</a></li>
+								<li class="tab col s3"><a href="#tab-signup">Sign Up</a></li>
+							</ul>
+						</div>
+
+						<div id="tab-signin" class="col s12">
+							<form class="col s12" action="javascript:login()">
+								<div class="row">
+									<div class="input-field col s12">
+										<input id="login-username" type="text" class="validate" maxlength="8" required>
+	          							<label for="login-username">NetID</label>
+									</div>
+									<div class="input-field col s12">
+										<input id="login-password" type="password" class="validate" required>
+	          							<label for="login-password">Password</label>
+									</div>
 								</div>
-								<div class="input-field col s12">
-									<input id="password" type="password" class="validate" required>
-          							<label for="password">Password</label>
+								<div>
+									<div class="input-field col s12 l8">
+										<button data-target="sign-in-modal" class="btn sign-in-button">Sign In</button>
+									</div>
+									<div class="input-field col s12 l4">
+										<span id="login-results"></span>
+									</div>
 								</div>
-								<div class="input-field col s12">
-									<button data-target="sign-in-modal" onclick="login()" class="btn">Sign In</button>
+							</form>
+						</div>
+
+						<div id="tab-signup" class="col s12">
+							<form class="col s12" action="javascript:register()">
+								<div class="row">
+									<div class="input-field col s12">
+										<input id="register-username" type="text" class="validate" maxlength="8" required>
+	          							<label for="register-username">NetID</label>
+									</div>
+									<div class="input-field col s12">
+										<input id="register-password" type="password" class="validate" required>
+	          							<label for="register-password">Password (don't use your AD password!)</label>
+									</div>
 								</div>
-							</div>
-						</form>
+								<div>
+									<div class="input-field col s12 l8">
+										<button data-target="sign-in-modal" class="btn register-button">Sign Up</button>
+									</div>
+									<div class="input-field col s12 l4">
+										<span id="register-results"></span>
+									</div>
+								</div>
+							</form>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -97,7 +133,7 @@
 				</div>
 
 				<div class="col s4 right-align valign">
-					<a class="waves-effect waves-light btn modal-trigger" href="#sign-in-modal">SignIn</a>
+					<a class="waves-effect waves-light btn modal-trigger sign-in-button" href="#sign-in-modal">SignIn</a>
 				</div>
 
 			</div>

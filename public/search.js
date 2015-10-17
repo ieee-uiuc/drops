@@ -67,7 +67,7 @@ function ytSearch() {
 					              <p class="truncate">' + item.snippet.description + '</p> \
 					            </div> \
 					            <div class="card-action"> \
-					              <a href="#" onclick="addSong(\'' + videoID + '\')"><i class="small material-icons">add</i>Add song to queue</a> \
+					              <a class="add-song-button" onclick="addSong(\'' + videoID + '\')"><i class="small material-icons">add</i>Add song to queue</a> \
 					            </div> \
 					          </div> \
 					        </div>' ;

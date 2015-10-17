@@ -1,7 +1,7 @@
 var app = require('http').createServer()
 var io = require('socket.io')(app);
 var spawn = require('child_process').spawn;
-var fs = require('fs');
+// var fs = require('fs');
 
 /* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
 
@@ -18,7 +18,7 @@ var stopped = true;
 
 // This holds the number of seconds elapsed since the start of the current song
 var currElapsed = 0;
-var intervalObj;
+var intervalObj, masterIntervalObj;
 
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
@@ -27,18 +27,31 @@ vlc.stdin.setEncoding('utf-8');
 // Pipes the command to the VLC remote control interface
 function rcVLC(command) {
 	var toWrite = command + "\n";
-	vlcin.write(toWrite);
 	vlc.stdin.write(toWrite);
 }
 
-// VLC input/output logs
-var vlcin = fs.createWriteStream("/home/pi/Desktop/vlcin.txt");
-
-// Queue log
-var queueLog = fs.createWriteStream("/home/pi/Desktop/queueLog.txt");
-
 // The current queue
 var queue = [];
+
+// Sets the song interval to increment currElapsed every second
+function setSongInterval() {
+	intervalObj = setInterval(function () {
+		currElapsed += 1;
+	}, 1000);
+}
+
+// Sets the master interval
+// This checks if the current song is done playing, and if so, go to the next song
+// This should occur regardless of the other setIntervals
+function setMasterInterval() {
+	masterIntervalObj = setInterval(function () {
+		if ( (queue.length > 0) && (playing) && (!stopped) ) {
+			if (currElapsed >= queue[0].length_seconds) {
+				nextSong();
+			}
+		}
+	}, 1000);
+}
 
 // Returns thumbnail url, title, duration, audio url, and sets score to 0
 function getInfo(id, cb) {
@@ -48,28 +61,31 @@ function getInfo(id, cb) {
 	ytdl.getInfo(url,
 				{"downloadURL":true},
 				function (err, info) {
+					// Error handling if ytdl couldn't get info for the request video
+					if (err || !info) {
+						cb('error');
+						return;
+					}
 					// Calculate and format duration properly
 					var seconds = info.length_seconds % 60;
 					if (seconds < 10) 
 						seconds = '0' + seconds;
 
-					// TODO: handle err, or if info is undefined/empty to prevent some edge cases of older youtube videos that don't have audio streams
 					var ret = {
 						id : id,
 						url : url,
 						thumbnail : info.iurlhq,
 						title : info.title,
-						addedBy : 'aagandh2',
+						addedBy : 'Someone',
 						length_seconds : info.length_seconds,
 						duration : Math.floor(info.length_seconds / 60) + ':' + seconds,
 						audioURL : '',
-						nowPlaying : false,
-						elapsed : 0,
 						score: 0
 					}
 
 					var results = info.formats;
 					// this might call the callback function more than once...
+					// TODO: change this to an actual for loop, then break out after the callback
 					results.forEach(function (item) {
 						if ((item.type).indexOf("audio/mp4") > -1) {
 							ret.audioURL = item.url;
@@ -113,15 +129,18 @@ function sortQueue(cb) {
 	});
 
 	// Delete all of it except the currently playing one, and put the sorted part back in
+	// TODO: This part could be made more efficient
 	queue.splice(1, queue.length-1);
 	queue = queue.concat(tempQueue);
 
 	cb();
 }
 
-// Go to next song
+// Go to next song by clearing vlc's playlist, and add from the front of our queue
+// TODO: Don't want masterInterval to keep incrementing while this is processing
 function nextSong(first) {
 	clearInterval(intervalObj);
+	clearInterval(masterIntervalObj);
 	currElapsed = 0;
 	rcVLC('clear');
 
@@ -129,6 +148,7 @@ function nextSong(first) {
 	if (queue.length == 0)
 		return;
 
+	// If this is the first song being played, just get the front, don't shift
 	if (!first)
 		queue.shift();
 	var nextSong = queue[0];
@@ -146,9 +166,8 @@ function nextSong(first) {
 		stopped = false;
 		
 		// Start incrementing elapsed every second
-		intervalObj = setInterval(function () {
-			currElapsed += 1;
-		}, 1000);
+		setSongInterval();
+		setMasterInterval();
 	}
 
 	// Send out updated queue and now playing status
@@ -184,15 +203,8 @@ function sendAll() {
 	sendNowPlaying();
 }
 
-// This checks if the current song is done playing, and if so, go to the next song
-// This should occur regardless of the other setIntervals
-var masterIntervalObj = setInterval(function () {
-	if ( (queue.length > 0) && (playing) && (!stopped) ) {
-		if (currElapsed >= queue[0].length_seconds) {
-			nextSong();
-		}
-	}
-}, 1000);
+// Set the master interval
+setMasterInterval();
 
 // APIs and socket interactions
 // These are on a per user 
@@ -224,6 +236,11 @@ io.on('connection', function (socket){
 	// This would fail if the song was too long, if it's already in the queue, or some error occurred
 	socket.on('addSong', function (data, fn) {
 		getInfo(data.id, function (song) {
+			// Error handling
+			if (song === 'error') {
+				fn('Error adding song.');
+				return;
+			}
 			// Check if the song is already in the queue
 			var index = songIndexInQueue(song.id);
 
@@ -240,7 +257,6 @@ io.on('connection', function (socket){
 			// otherwise, add the song
 			else {
 				queue.push(song);
-				queueLog.write("Adding song: " + song.title + '\n');
 
 				sendQueue();
 				fn('Song added!');
@@ -257,20 +273,27 @@ io.on('connection', function (socket){
 	socket.on('vote', function(data,fn) {
 		var index = songIndexInQueue(data.id);
 		if (index) {
-			queue[index].score += data.vote;
+			// If data.vote is 0, don't do anything
+			if (data.vote == 0)
+				return;
+			// If it's is positive, increment the score
+			if (data.vote > 0)
+				queue[index].score += 1;
+			// If it's negative, decrement the score
+			else if (data.vote < 0)
+				queue[index].score -= 1;
+
+			// Sort
 			sortQueue(sendQueue);
 			fn();
 		}
-	})
+	});
 
 	/* MUSIC CONTROLS */
 
 	socket.on('play', function (data, fn) {
 		// Start incrementing elapsed every second
-		intervalObj = setInterval(function () {
-			currElapsed += 1;
-		}, 1000);
-
+		setSongInterval();
 		rcVLC('play');
 		playing = true;
 		sendNowPlaying();
@@ -278,13 +301,11 @@ io.on('connection', function (socket){
 
 	socket.on('pause', function (data, fn) {
 		clearInterval(intervalObj);
-
 		rcVLC('pause');
 		playing = false;
 		sendNowPlaying();
 	});
 
-	// Clear vlc's playlist, and add from the front of our queue
 	socket.on('next', function (data,fn) {
 		nextSong();
 	})

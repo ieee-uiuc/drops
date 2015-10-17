@@ -1,6 +1,8 @@
 var app = require('http').createServer()
 var io = require('socket.io')(app);
 var spawn = require('child_process').spawn;
+var mongoose = require('mongoose');
+var User = require('./user');
 // var fs = require('fs');
 
 /* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
@@ -312,3 +314,5 @@ io.on('connection', function (socket){
 
 });
 
+
+// Test user creation

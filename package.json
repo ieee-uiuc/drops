@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "socket.io": "latest",
-    "ytdl-core": "latest"
+    "ytdl-core": "latest",
+    "mongoose": "latest",
+    "bcrypt": "bcrypt"
   },
   "devDependencies": {},
   "repository": {

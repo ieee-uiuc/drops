@@ -457,4 +457,32 @@ io.on('connection', function (socket){
 		});
 	});
 
+	/* MUSIC CONTROLS */
+
+	socket.on('admin', function(data, fn) {
+		switch(data.command) {
+			case "changeVolume":
+				break;
+			case "clearQueue":
+				clearInterval(intervalObj);
+				clearInterval(masterIntervalObj);
+				currElapsed = 0;
+				rcVLC('clear');
+				queue.length = 0;
+				playing = false;
+				stopped = true;
+				sendQueue();
+				sendNowPlaying();
+				break;
+			case "getListOfAllUsers":
+				break;
+			case "getListOfCurrUsers":
+				break;
+			case "banUser":
+				break;
+			case "banSong":
+				break;
+		}
+	});
+
 });

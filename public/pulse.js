@@ -179,6 +179,8 @@ socket.on('queueUpdated', function(data) {
 
 		$('#queue').append(songHTML);
 	});
+
+	Materialize.toast('Queue Updated!', 2500);
 });
 
 // when numUsers updates

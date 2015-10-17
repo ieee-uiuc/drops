@@ -27,6 +27,7 @@ vlc.stdin.setEncoding('utf-8');
 // Pipes the command to the VLC remote control interface
 function rcVLC(command) {
 	var toWrite = command + "\n";
+	console.log(command);
 	vlc.stdin.write(toWrite);
 }
 
@@ -84,14 +85,13 @@ function getInfo(id, cb) {
 					}
 
 					var results = info.formats;
-					// this might call the callback function more than once...
-					// TODO: change this to an actual for loop, then break out after the callback
-					results.forEach(function (item) {
-						if ((item.type).indexOf("audio/mp4") > -1) {
-							ret.audioURL = item.url;
+					for (var i = 0; i < results.length; i++) {
+						if ((results[i].type).indexOf("audio/mp4") > -1) {
+							ret.audioURL = results[i].url;
 							cb(ret);
+							break;
 						}
-					});
+					};
 	});
 }
 
@@ -137,7 +137,6 @@ function sortQueue(cb) {
 }
 
 // Go to next song by clearing vlc's playlist, and add from the front of our queue
-// TODO: Don't want masterInterval to keep incrementing while this is processing
 function nextSong(first) {
 	clearInterval(intervalObj);
 	clearInterval(masterIntervalObj);

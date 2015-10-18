@@ -30,6 +30,10 @@ main {
 	bottom: 8vh;
 }
 
+.card-title {
+	text-shadow: 2px 2px 5px #000000;
+}
+
 /* FOOTER */
 footer.page-footer {
 	position: fixed;

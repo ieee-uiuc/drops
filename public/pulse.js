@@ -17,6 +17,10 @@ var queue;
 var currElapsed = 0;
 var currSongLength = 0;
 
+function notify(msg) {
+	Materialize.toast(msg, 2500);
+}
+
 /* Credential related functions */
 
 // Saves the provided token into sessionStorage
@@ -96,9 +100,8 @@ function vote(id, vote) {
 	}
 	
 	else {
-		socket.emit('vote', { id : id, vote : vote, token : authToken}, function() {
-			$('.voteButton-' + id).fadeOut('fast');
-			Materialize.toast('Voted!', 2500);
+		socket.emit('vote', { id : id, vote : vote, token : authToken}, function(response) {
+			notify(response.message);
 		});
 	}
 }
@@ -115,7 +118,7 @@ function addSong(id) {
 	
 	else {
 		socket.emit('addSong', { id : id, token : authToken }, function(response) {
-			Materialize.toast(response, 2500);
+			notify(response.message);
 		});
 	}
 }
@@ -180,7 +183,7 @@ socket.on('queueUpdated', function(data) {
 		$('#queue').append(songHTML);
 	});
 
-	Materialize.toast('Queue Updated!', 2500);
+	notify('Queue Updated!');
 });
 
 // when numUsers updates
@@ -211,7 +214,7 @@ $('#next').click(function() {
 	
 	else {
 		socket.emit('next', { token : authToken }, function(response) {
-			Materialize.toast(response, 2500);
+			notify(response.message);
 		});
 	}
 });

@@ -361,14 +361,14 @@ io.on('connection', function (socket){
 		// First check if the token was included and if it's valid. If it's not, don't add the song
 		verifyToken(data.token, function(valid) {
 			if (!valid.success) {
-				fn('Please sign in to add songs!');
+				fn({success : false, message : 'Please sign in to add songs!'});
 				return;
 			}
 
 			getInfo(data.id, function (song) {
 				// Error handling
 				if (song === 'error') {
-					fn('Error adding song.');
+					fn({success : false, message : 'Error adding song.'});
 					return;
 				}
 				// Check if the song is already in the queue
@@ -376,12 +376,12 @@ io.on('connection', function (socket){
 
 				// If the request song is more than 10 minutes, don't allow it to be added to the queue. This is to prevent those 10 hour mixes.
 				if (song.length_seconds > 600) {
-					fn('Sorry, that song is too long!');
+					fn({success : false, message : 'Sorry, that song is too long!'});
 				}
 
 				// Prevent adding the song if it's already in the queue
 				else if (index !== false) {
-					fn('That song is already in the queue!');
+					fn({success : false, message : 'That song is already in the queue!'});
 				}
 
 				// otherwise, add the song
@@ -391,7 +391,7 @@ io.on('connection', function (socket){
 					queue.push(song);
 
 					sendQueue();
-					fn('Song added!');
+					fn({success : true, message : 'Song added!'});
 
 					// If nothing is currently playing, start playing the song that was just added
 					if (stopped)
@@ -406,26 +406,43 @@ io.on('connection', function (socket){
 	socket.on('vote', function(data,fn) {
 		verifyToken(data.token, function(valid) {
 			if (!valid.success) {
-				fn('Please sign in to vote on songs!');
+				fn({success: false, message: "Please sign in to vote!"});
 				return;
 			}
 
+			// Find the song in the queue
 			var index = songIndexInQueue(data.id);
-			if (index) {
-				// If data.vote is 0, don't do anything
-				if (data.vote == 0)
-					return;
-				// If it's is positive, increment the score
-				if (data.vote > 0)
-					queue[index].score += 1;
-				// If it's negative, decrement the score
-				else if (data.vote < 0)
-					queue[index].score -= 1;
-
-				// Sort
-				sortQueue(sendQueue);
-				fn();
+			if (index === false) {
+				return;
 			}
+
+			// Check if the user has already voted on that song
+			if ( (queue[index].votedOnBy).indexOf(valid.decodedToken.username) != -1 ) {
+				fn({success: false, message: "You've already voted on this song."});
+				return;
+			}
+
+			// If data.vote is 0, don't do anything. This won't happen from user interaction, but if the front end vote function is called some other way, cover this case
+			if (data.vote == 0)
+				return;
+
+			// For up and down votes, mark down the user that voted
+
+			// If it's is positive, increment the score
+			else if (data.vote > 0) {
+				queue[index].score += 1;
+				queue[index].votedOnBy.push(valid.decodedToken.username);
+				fn({success: true, message: "Upvoted!"});
+			}
+			// If it's negative, decrement the score
+			else if (data.vote < 0) {
+				queue[index].score -= 1;
+				queue[index].votedOnBy.push(valid.decodedToken.username);
+				fn({success: true, message: "Downvoted!"});
+			}
+
+			// Sort
+			sortQueue(sendQueue);
 		});		
 	});
 
@@ -449,7 +466,7 @@ io.on('connection', function (socket){
 	socket.on('next', function (data,fn) {
 		verifyToken(data.token, function(valid) {
 			if (!valid.success) {
-				fn('Please sign in to skip songs!');
+				fn({success : false, message : "Please sign in to skip songs."});
 				return;
 			}
 

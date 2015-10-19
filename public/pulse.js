@@ -234,10 +234,13 @@ $(document).ready(function(){
 	// the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
 	$('.modal-trigger').leanModal();
 
-	// Check if there's already a valid token. If so, hide sign-in and register buttons
+	// Check if there's already a valid token. If so, hide sign-in and register buttons. If not, tell them they need to sign in
 	checkToken(function(valid) {
 		if (valid) {
 			$('.sign-in-button, .register-button').fadeOut('fast');
+		}
+		else {
+			$('login-results').html("Please sign in for all functionality.");
 		}
 	});
 });

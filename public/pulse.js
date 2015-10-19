@@ -12,25 +12,115 @@ socket.on('disconnect', function() {
 
 // Global now playing variable. Should always match the backend system now playing variable
 var playing = false;
+var queue;
 
 var currElapsed = 0;
 var currSongLength = 0;
+
+function notify(msg) {
+	Materialize.toast(msg, 2500);
+}
+
+/* Credential related functions */
+
+// Saves the provided token into sessionStorage
+function setToken(token) {
+	sessionStorage.setItem('authToken', token);
+}
+
+// Returns the token from sessionStorage
+function getToken() {
+	return sessionStorage.getItem('authToken');
+}
+
+// This checks for a token in sessionStorage and makes sure it's valid. If both conditions match, it returns the token
+// Shouldn't verify on client side, should verify by calling an API endpoint
+function checkToken(cb) {
+	var authToken = getToken();
+
+	if ( (authToken === null) || (authToken === undefined) ) {
+		cb(false);
+	}
+
+	socket.emit('verifyToken', {token : authToken}, function(response) {
+		cb(response.success); // don't need the decoded token
+	});
+}
+
+function register() {
+	socket.emit('register', {username : $('#register-username').val(), password : $('#register-password').val()}, function(response) {
+		// If registration was unsuccessful (username already taken or some other error), display the response message
+		if (!response.success)
+			$('#register-results').html(response.message);
+		
+		// If registration succeeded, it'll make the user return with the JWT which we store in sessionStorage
+		else {
+			setToken(response.token);
+			$('#register-results').html(response.message);
+
+			// Show the message for 1.5 seconds before closing the modal
+			setTimeout(function() {
+				$('#sign-in-modal').closeModal();
+				$('.sign-in-button, .register-button').fadeOut('fast');
+			}, 1500);
+		}
+	});
+}
+
+function login() {
+	socket.emit('login', {username : $('#login-username').val(), password : $('#login-password').val()}, function(response) {
+		// If login was unsuccessful (username and/or password was incorrect)
+		if (!response.success)
+			$('#login-results').html(response.message);
+		
+		// If login was successful, save it in sessionStorage
+		else {
+			setToken(response.token);
+			$('#login-results').html(response.message);
+
+			// Show the message for 1.5 seconds before closing the modal
+			setTimeout(function() {
+				$('#sign-in-modal').closeModal();
+				$('.sign-in-button, .register-button').fadeOut('fast');
+			}, 1500);
+		}
+	});
+		
+}
 
 /* USER INTERACTIONS */
 
 // Upvote/downvote a song, disable vote buttons for that song for current user
 function vote(id, vote) {
-	socket.emit('vote', { id : id, vote : vote}, function() {
-		$('.voteButton-' + id).fadeOut('fast');
-		Materialize.toast('Voted!', 2500);
-	});
+	var authToken = getToken();
+
+	if ( (authToken === null) || (authToken === undefined) ) {
+		$('login-results').html("Please sign in to add songs.");
+		$('#sign-in-modal').openModal();
+	}
+	
+	else {
+		socket.emit('vote', { id : id, vote : vote, token : authToken}, function(response) {
+			notify(response.message);
+		});
+	}
 }
 
 // id is youtube video id
 function addSong(id) {
-	socket.emit('addSong', { id : id }, function(response) {
-		Materialize.toast(response, 2500);
-	});
+	// Call checkToken first
+	var authToken = getToken();
+
+	if ( (authToken === null) || (authToken === undefined) ) {
+		$('login-results').html("Please sign in to add songs.");
+		$('#sign-in-modal').openModal();
+	}
+	
+	else {
+		socket.emit('addSong', { id : id, token : authToken }, function(response) {
+			notify(response.message);
+		});
+	}
 }
 
 /* INCOMING EVENTS */
@@ -76,12 +166,13 @@ socket.on('queueUpdated', function(data) {
 
 		// for the currently playing song, inform the user as such
 		if (index == 0) {
-			songHTML += '<h6>Now Playing</h6>';
+			songHTML += '<div class="col s2"></div><div class="col s8"><h5>Now Playing</h5></div><div class="col s2"></div>';
 		}
 		// don't add vote buttons for the currently playing song
 		if (index > 0) {
-			songHTML += '<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></a> \
-						<a href="#" class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></a>'
+			songHTML += '<div class="col s2"><a class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', 1)"><i class="material-icons upvote">thumb_up</i></a></div> \
+						<div class="col s8"><h5>Score : ' + song.score + '</h5></div> \
+						<div class="col s2"><a class="btn-floating btn-flat waves-effect waves-light voteButton-' + song.id + '" onclick="vote(\'' + song.id + '\', -1)"><i class="material-icons downvote">thumb_down</i></a></div>'
 		}
 					            
 		songHTML += '</div> \
@@ -91,6 +182,8 @@ socket.on('queueUpdated', function(data) {
 
 		$('#queue').append(songHTML);
 	});
+
+	notify('Queue Updated!');
 });
 
 // when numUsers updates
@@ -111,7 +204,19 @@ $('#play_pause').click(function() {
 
 
 $('#next').click(function() {
-	socket.emit('next');
+	// Call checkToken first
+	var authToken = getToken();
+
+	if ( (authToken === null) || (authToken === undefined) ) {
+		$('login-results').html("Please sign in to add songs.");
+		$('#sign-in-modal').openModal();
+	}
+	
+	else {
+		socket.emit('next', { token : authToken }, function(response) {
+			notify(response.message);
+		});
+	}
 });
 
 // If they press Esc, close the search results
@@ -124,3 +229,18 @@ $(document).keyup(function(e) {
 			return;
 	}
 })
+
+$(document).ready(function(){
+	// the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+	$('.modal-trigger').leanModal();
+
+	// Check if there's already a valid token. If so, hide sign-in and register buttons. If not, tell them they need to sign in
+	checkToken(function(valid) {
+		if (valid) {
+			$('.sign-in-button, .register-button').fadeOut('fast');
+		}
+		else {
+			$('login-results').html("Please sign in for all functionality.");
+		}
+	});
+});

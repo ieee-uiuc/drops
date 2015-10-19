@@ -1,8 +1,8 @@
 node_modules
-bower_components
 npm-debug.log
 
 vlcin.txt
 vlcout.txt
-
 queueLog.txt
+
+.jwt-secret

@@ -21,7 +21,7 @@ main {
 	color: #F44336 !important;
 }
 
-#play_pause, #next, #search-button, #close-results-button {
+.add-song-button, #play_pause, #next, #search-button, #close-results-button {
 	cursor: pointer;
 }
 

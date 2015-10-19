@@ -1,12 +1,28 @@
 var app = require('http').createServer()
 var io = require('socket.io')(app);
 var spawn = require('child_process').spawn;
-// var fs = require('fs');
+var mongoose = require('mongoose');
+var User = require('./user');
+var fs = require('fs');
+var jwt = require('jsonwebtoken');
 
 /* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
 
-// Listen to WebSocket connections on port 80
-// if you do port 80, you need sudo, but vlc won't run with sudo...
+// Make connection to MongoDB
+var connStr = 'mongodb://localhost/drops';
+mongoose.connect(connStr, function(err) {
+    if (err) throw err;
+    //console.log('Successfully connected to MongoDB');
+});
+
+// JSON Web Token related things
+var jwtSecret = fs.readFileSync('.jwt-secret');
+var AUDIENCE = "http://ecerso.party";
+var ISSUER = "http://ecerso.party";
+var EXPIRY = "2h";
+var ALGORITHM = "HS256";
+
+// Listen to WebSocket connections on port 8080
 app.listen(8080);
 
 // Total current user counter
@@ -27,7 +43,6 @@ vlc.stdin.setEncoding('utf-8');
 // Pipes the command to the VLC remote control interface
 function rcVLC(command) {
 	var toWrite = command + "\n";
-	console.log(command);
 	vlc.stdin.write(toWrite);
 }
 
@@ -77,15 +92,18 @@ function getInfo(id, cb) {
 						url : url,
 						thumbnail : info.iurlhq,
 						title : info.title,
-						addedBy : 'Someone',
+						addedBy : 'DJ ROOMBA',
 						length_seconds : info.length_seconds,
 						duration : Math.floor(info.length_seconds / 60) + ':' + seconds,
 						audioURL : '',
-						score: 0
+						score: 0,
+						votedOnBy : []
 					}
 
 					var results = info.formats;
 					for (var i = 0; i < results.length; i++) {
+						if (results[i].type === undefined)
+							continue;
 						if ((results[i].type).indexOf("audio/mp4") > -1) {
 							ret.audioURL = results[i].url;
 							cb(ret);
@@ -205,7 +223,20 @@ function sendAll() {
 // Set the master interval
 setMasterInterval();
 
+function verifyToken(token, fn) {
+	jwt.verify(token, jwtSecret, {algorithms : [ALGORITHM], audience : AUDIENCE, issuer : ISSUER}, function(err, decoded) {
+			// If the token is not valid
+			if (err)
+				fn({success : false, decodedToken : null});
+
+			// If the token is not yet expired and is otherwise valid
+			else 
+				fn({success : true, decodedToken : decoded});
+		});
+}
+
 // APIs and socket interactions
+// These are on a per user 
 io.on('connection', function (socket){
 
 	// Up the total current user counter
@@ -222,62 +253,197 @@ io.on('connection', function (socket){
 		sendNumUsers();
 	});
 
+	/* Credential related functions - register, login, verifyToken */
+
+	// Registers a user in the db with their provided credentials
+	socket.on('register', function(data, fn) {
+		// Try finding the username first to see if it exists
+		User.findOne({ username: data.username }, function(err, user) {
+			// If some error happens
+	        if (err) {
+	        	fn({success : false, message : 'Something happened.'});
+	        	throw err;
+	        }
+
+	        // If a user with that name is found, tell the end user that they can't use this one.
+	        if (user)
+	        	fn({success : false, message : 'User "' + data.username + '" already exists.'});
+
+	        // If the user is not found, add the new one 
+	        if (!user) {
+	        	// create a user a new user
+				var newUser = new User({
+				    username: data.username,
+				    password: data.password
+				});
+
+				// Save user to database
+				newUser.save(function(err) {
+				    if (err) {
+				    	fn({success : false, message : 'Could not save user.'});
+				    	throw err;
+				    }
+				});
+
+				// Create the token and return that
+            	var generatedToken = jwt.sign({	username : user.username},
+            									jwtSecret,
+            									{	expiresIn : EXPIRY,
+            										audience : AUDIENCE,
+            										issuer : ISSUER,
+            										subject : user.username
+            									}
+            								);
+
+	        	fn({success : true, message : 'Thanks for registering ' + data.username, token : generatedToken});
+	        	return;
+	        }
+	    });
+
+	    
+
+		
+	});
+
+	// Checks whether the attempted credentials are correct and responds accordingly
+	socket.on('login', function(data, fn) {
+		// Find the user
+		User.findOne({ username: data.username }, function(err, user) {
+			// If some error happens
+	        if (err) {
+	        	fn({success : false, message : 'Something happened.'});
+	        	throw err;
+	        }
+
+	        // If the user is not found
+	        if (!user) {
+	        	fn({success : false, message : 'User "' + data.username + '" not found.'});
+	        	return;
+	        }
+
+	        // Check whether the password matches
+	        user.comparePassword(data.password, function(err, isMatch) {
+	            if (err)
+	            	throw err;
+
+	            // If the password does not match
+	            if (!isMatch) {
+	            	fn({success : false, message : 'Password incorrect.'});
+	            }
+	            
+	            // If password matches, create and send the token.
+	            if (isMatch) {
+	            	// Create the token and return that
+	            	var generatedToken = jwt.sign({	username : user.username},
+	            									jwtSecret,
+	            									{	expiresIn : EXPIRY,
+	            										audience : AUDIENCE,
+	            										issuer : ISSUER,
+	            										subject : user.username
+	            									}
+	            								);
+					fn({success : true, message : 'Login success.', token : generatedToken});
+	            }
+	        });
+
+	    });
+	});
+
+	// Checks whether the supplied token is valid
+	socket.on('verifyToken', function(data,fn) {
+		verifyToken(data.token, fn);
+	});
+
 	// Add a song to the queue
 	// "Returns" whether the song was successfully added or not
 	// This would fail if the song was too long, if it's already in the queue, or some error occurred
 	socket.on('addSong', function (data, fn) {
-		getInfo(data.id, function (song) {
-			// Error handling
-			if (song === 'error') {
-				fn('Error adding song.');
+		// First check if the token was included and if it's valid. If it's not, don't add the song
+		verifyToken(data.token, function(valid) {
+			if (!valid.success) {
+				fn({success : false, message : 'Please sign in to add songs!'});
 				return;
 			}
-			// Check if the song is already in the queue
-			var index = songIndexInQueue(song.id);
 
-			// If the request song is more than 10 minutes, don't allow it to be added to the queue. This is to prevent those 10 hour mixes.
-			if (song.length_seconds > 600) {
-				fn('Sorry, that song is too long!');
-			}
+			getInfo(data.id, function (song) {
+				// Error handling
+				if (song === 'error') {
+					fn({success : false, message : 'Error adding song.'});
+					return;
+				}
+				// Check if the song is already in the queue
+				var index = songIndexInQueue(song.id);
 
-			// Prevent adding the song if it's already in the queue
-			else if (index !== false) {
-				fn('That song is already in the queue!');
-			}
+				// If the request song is more than 10 minutes, don't allow it to be added to the queue. This is to prevent those 10 hour mixes.
+				if (song.length_seconds > 600) {
+					fn({success : false, message : 'Sorry, that song is too long!'});
+				}
 
-			// otherwise, add the song
-			else {
-				queue.push(song);
+				// Prevent adding the song if it's already in the queue
+				else if (index !== false) {
+					fn({success : false, message : 'That song is already in the queue!'});
+				}
 
-				sendQueue();
-				fn('Song added!');
+				// otherwise, add the song
+				else {
+					// Add the username of the person that added the song
+					song.addedBy = valid.decodedToken.sub;
+					queue.push(song);
 
-				// If nothing is currently playing, start playing the song that was just added
-				if (stopped)
-					nextSong(true);
-			}
+					sendQueue();
+					fn({success : true, message : 'Song added!'});
+
+					// If nothing is currently playing, start playing the song that was just added
+					if (stopped)
+						nextSong(true);
+				}
+			});
 		});
 	});
 
 	// Modifies the queue item's score based on what the user clicked
 	// Once that's done, it sorts the queue, then sends out an updated queue
 	socket.on('vote', function(data,fn) {
-		var index = songIndexInQueue(data.id);
-		if (index) {
-			// If data.vote is 0, don't do anything
+		verifyToken(data.token, function(valid) {
+			if (!valid.success) {
+				fn({success: false, message: "Please sign in to vote!"});
+				return;
+			}
+
+			// Find the song in the queue
+			var index = songIndexInQueue(data.id);
+			if (index === false) {
+				return;
+			}
+
+			// Check if the user has already voted on that song
+			if ( (queue[index].votedOnBy).indexOf(valid.decodedToken.username) != -1 ) {
+				fn({success: false, message: "You've already voted on this song."});
+				return;
+			}
+
+			// If data.vote is 0, don't do anything. This won't happen from user interaction, but if the front end vote function is called some other way, cover this case
 			if (data.vote == 0)
 				return;
+
+			// For up and down votes, mark down the user that voted
+
 			// If it's is positive, increment the score
-			if (data.vote > 0)
+			else if (data.vote > 0) {
 				queue[index].score += 1;
+				queue[index].votedOnBy.push(valid.decodedToken.username);
+				fn({success: true, message: "Upvoted!"});
+			}
 			// If it's negative, decrement the score
-			else if (data.vote < 0)
+			else if (data.vote < 0) {
 				queue[index].score -= 1;
+				queue[index].votedOnBy.push(valid.decodedToken.username);
+				fn({success: true, message: "Downvoted!"});
+			}
 
 			// Sort
 			sortQueue(sendQueue);
-			fn();
-		}
+		});		
 	});
 
 	/* MUSIC CONTROLS */
@@ -298,8 +464,42 @@ io.on('connection', function (socket){
 	});
 
 	socket.on('next', function (data,fn) {
-		nextSong();
-	})
+		verifyToken(data.token, function(valid) {
+			if (!valid.success) {
+				fn({success : false, message : "Please sign in to skip songs."});
+				return;
+			}
+
+			nextSong();
+		});
+	});
+
+	/* MUSIC CONTROLS */
+
+	socket.on('admin', function(data, fn) {
+		switch(data.command) {
+			case "changeVolume":
+				break;
+			case "clearQueue":
+				clearInterval(intervalObj);
+				clearInterval(masterIntervalObj);
+				currElapsed = 0;
+				rcVLC('clear');
+				queue.length = 0;
+				playing = false;
+				stopped = true;
+				sendQueue();
+				sendNowPlaying();
+				break;
+			case "getListOfAllUsers":
+				break;
+			case "getListOfCurrUsers":
+				break;
+			case "banUser":
+				break;
+			case "banSong":
+				break;
+		}
+	});
 
 });
-

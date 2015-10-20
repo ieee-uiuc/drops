@@ -1,6 +1,6 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
-    bcrypt = require('bcrypt'),
+    bcrypt = require('bcrypt-nodejs'),
     SALT_WORK_FACTOR = 10;
 
 var UserSchema = new Schema({
@@ -17,18 +17,13 @@ UserSchema.pre('save', function(next) {
     if (!user.isModified('password'))
         return next();
 
-    // generate a salt
-    bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
+    // hash the password using the automatically generated salt
+    bcrypt.hash(user.password, null, null, function(err, hash) {
         if (err) return next(err);
 
-        // hash the password using our new salt
-        bcrypt.hash(user.password, salt, function(err, hash) {
-            if (err) return next(err);
-
-            // override the cleartext password with the hashed one
-            user.password = hash;
-            next();
-        });
+        // override the cleartext password with the hashed one
+        user.password = hash;
+        next();
     });
 });
 

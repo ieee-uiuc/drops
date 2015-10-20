@@ -11,7 +11,7 @@
     "socket.io": "latest",
     "ytdl-core": "latest",
     "mongoose": "latest",
-    "bcrypt": "latest",
+    "bcrypt-nodejs": "latest",
     "jsonwebtoken": "latest"
   },
   "devDependencies": {},

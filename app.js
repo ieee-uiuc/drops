@@ -286,7 +286,7 @@ io.on('connection', function (socket){
 				});
 
 				// Create the token and return that
-            	var generatedToken = jwt.sign({	username : user.username},
+            	var generatedToken = jwt.sign({	username : data.username},
             									jwtSecret,
             									{	expiresIn : EXPIRY,
             										audience : AUDIENCE,

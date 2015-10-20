@@ -291,7 +291,7 @@ io.on('connection', function (socket){
             									{	expiresIn : EXPIRY,
             										audience : AUDIENCE,
             										issuer : ISSUER,
-            										subject : user.username
+            										subject : data.username
             									}
             								);
 

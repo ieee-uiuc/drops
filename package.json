@@ -1,28 +1,27 @@
 {
-  "name": "pulse",
+  "name": "drops",
   "version": "1.0.0",
   "description": "ECE RSO Office Music System",
   "main": "app.js",
   "scripts": {
-    "bower": "bower install",
     "start": "node app.js"
   },
   "dependencies": {
-    "socket.io": "latest",
-    "ytdl-core": "latest",
-    "mongoose": "latest",
-    "bcrypt-nodejs": "latest",
-    "jsonwebtoken": "latest"
+    "bcrypt-nodejs": "0.0.3",
+    "jsonwebtoken": "^5.4.1",
+    "mongoose": "^4.2.2",
+    "socket.io": "^1.3.7",
+    "ytdl-core": "^0.7.5"
   },
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ieee-uiuc/pulse.git"
+    "url": "git+https://github.com/ieee-uiuc/drops.git"
   },
   "author": "Anit Gandhi",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ieee-uiuc/pulse/issues"
+    "url": "https://github.com/ieee-uiuc/drops/issues"
   },
-  "homepage": "https://github.com/ieee-uiuc/pulse#readme"
+  "homepage": "https://github.com/ieee-uiuc/drops#readme"
 }

@@ -8,9 +8,9 @@ var jwt = require('jsonwebtoken');
 /* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
 
 var options = {
-    key:    fs.readFileSync('/etc/apache2/ssl/private.key'),
-    cert:   fs.readFileSync('/etc/apache2/ssl/ssl.crt'),
-    ca:     fs.readFileSync('/etc/apache2/ssl/sub.class1.server.ca.pem')
+    key:    fs.readFileSync('/ssl/private.key'),
+    cert:   fs.readFileSync('/ssl/ssl.crt'),
+    ca:     fs.readFileSync('/ssl/sub.class1.server.ca.pem')
 };
 
 // Listen to WebSocket Secure connections on port 8080
@@ -27,8 +27,8 @@ mongoose.connect(connStr, function(err) {
 
 // JSON Web Token related things
 var jwtSecret = fs.readFileSync('.jwt-secret');
-var AUDIENCE = "http://ecerso.party";
-var ISSUER = "http://ecerso.party";
+var AUDIENCE = "https://ecerso.party";
+var ISSUER = "https://ecerso.party";
 var EXPIRY = "2h";
 var ALGORITHM = "HS256";
 

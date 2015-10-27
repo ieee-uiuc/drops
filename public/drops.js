@@ -1,4 +1,4 @@
-var socket = io(window.location.hostname + ':8080');
+var socket = io(window.location.hostname + ':8080', {secure: true});
 
 // By default, show the user it isn't connected, but once it has, allow the user to interact
 socket.on('connect', function() {

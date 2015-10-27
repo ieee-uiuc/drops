@@ -1,5 +1,4 @@
-var app = require('http').createServer()
-var io = require('socket.io')(app);
+var https = require('https');
 var spawn = require('child_process').spawn;
 var mongoose = require('mongoose');
 var User = require('./user');
@@ -7,6 +6,17 @@ var fs = require('fs');
 var jwt = require('jsonwebtoken');
 
 /* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
+
+var options = {
+    key:    fs.readFileSync('/etc/apache2/ssl/private.key'),
+    cert:   fs.readFileSync('/etc/apache2/ssl/ssl.crt'),
+    ca:     fs.readFileSync('/etc/apache2/ssl/sub.class1.server.ca.pem')
+};
+
+// Listen to WebSocket Secure connections on port 8080
+var app = https.createServer(options);
+io = require('socket.io').listen(app);
+app.listen(8080);
 
 // Make connection to MongoDB
 var connStr = 'mongodb://localhost/drops';
@@ -21,9 +31,6 @@ var AUDIENCE = "http://ecerso.party";
 var ISSUER = "http://ecerso.party";
 var EXPIRY = "2h";
 var ALGORITHM = "HS256";
-
-// Listen to WebSocket connections on port 8080
-app.listen(8080);
 
 // Total current user counter
 var numUsers = 0;

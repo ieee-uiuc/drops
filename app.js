@@ -381,8 +381,20 @@ io.on('connection', function (socket){
 				// Check if the song is already in the queue
 				var index = songIndexInQueue(song.id);
 
-				// If the request song is more than 10 minutes, don't allow it to be added to the queue. This is to prevent those 10 hour mixes.
-				if (song.length_seconds > 600) {
+				// If the request song is more than 10 minutes, don't allow it to be added to the queue. This is to prevent those 10 hour mixes. 
+				// Update: allow them from 11PM-6AM, 2.5 hours
+				var now = new Date();
+				var night = new Date();
+				var day = new Date();
+
+				night.setHours(23);
+				night.setMinutes(0);
+
+				day.setDate(night.getDate() + 1);
+				day.setHours(6);
+
+				// If it's outside our hours and the song is greater than 10 minutes
+				if ( ((now < night) || (now > day)) && (song.length_seconds > 600) ) {
 					fn({success : false, message : 'Sorry, that song is too long!'});
 				}
 
@@ -393,16 +405,23 @@ io.on('connection', function (socket){
 
 				// otherwise, add the song
 				else {
-					// Add the username of the person that added the song
-					song.addedBy = valid.decodedToken.sub;
-					queue.push(song);
+					// Might be during night hours, so allow up to 2.5 hours
+					if (song.length_seconds > 2.5*60*60) {
+						fn({success : false, message : 'Sorry, that song is too long!'});
+					}
 
-					sendQueue();
-					fn({success : true, message : 'Song added!'});
+					else {
+						// Add the username of the person that added the song
+						song.addedBy = valid.decodedToken.sub;
+						queue.push(song);
 
-					// If nothing is currently playing, start playing the song that was just added
-					if (stopped)
-						nextSong(true);
+						sendQueue();
+						fn({success : true, message : 'Song added!'});
+
+						// If nothing is currently playing, start playing the song that was just added
+						if (stopped)
+							nextSong(true);
+					}
 				}
 			});
 		});

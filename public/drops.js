@@ -48,6 +48,7 @@ function checkToken(cb) {
 }
 
 function register() {
+	$('#register-spinner').show();
 	socket.emit('register', {username : $('#register-username').val(), password : $('#register-password').val()}, function(response) {
 		// If registration was unsuccessful (username already taken or some other error), display the response message
 		if (!response.success)
@@ -56,6 +57,7 @@ function register() {
 		// If registration succeeded, it'll make the user return with the JWT which we store in sessionStorage
 		else {
 			setToken(response.token);
+			$('#register-spinner').hide();
 			$('#register-results').html(response.message);
 
 			// Show the message for 1.5 seconds before closing the modal
@@ -68,6 +70,7 @@ function register() {
 }
 
 function login() {
+	$('#login-spinner').show();
 	socket.emit('login', {username : $('#login-username').val(), password : $('#login-password').val()}, function(response) {
 		// If login was unsuccessful (username and/or password was incorrect)
 		if (!response.success)
@@ -76,6 +79,7 @@ function login() {
 		// If login was successful, save it in sessionStorage
 		else {
 			setToken(response.token);
+			$('#login-spinner').hide();
 			$('#login-results').html(response.message);
 
 			// Show the message for 1.5 seconds before closing the modal

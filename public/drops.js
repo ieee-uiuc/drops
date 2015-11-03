@@ -23,17 +23,17 @@ function notify(msg) {
 
 /* Credential related functions */
 
-// Saves the provided token into sessionStorage
+// Saves the provided token into localStorage
 function setToken(token) {
-	sessionStorage.setItem('authToken', token);
+	localStorage.setItem('authToken', token);
 }
 
-// Returns the token from sessionStorage
+// Returns the token from localStorage
 function getToken() {
-	return sessionStorage.getItem('authToken');
+	return localStorage.getItem('authToken');
 }
 
-// This checks for a token in sessionStorage and makes sure it's valid. If both conditions match, it returns the token
+// This checks for a token in localStorage and makes sure it's valid. If both conditions match, it returns the token
 // Shouldn't verify on client side, should verify by calling an API endpoint
 function checkToken(cb) {
 	var authToken = getToken();
@@ -54,7 +54,7 @@ function register() {
 		if (!response.success)
 			$('#register-results').html(response.message);
 		
-		// If registration succeeded, it'll make the user return with the JWT which we store in sessionStorage
+		// If registration succeeded, it'll make the user return with the JWT which we store in localStorage
 		else {
 			setToken(response.token);
 			$('#register-spinner').hide();
@@ -76,7 +76,7 @@ function login() {
 		if (!response.success)
 			$('#login-results').html(response.message);
 		
-		// If login was successful, save it in sessionStorage
+		// If login was successful, save it in localStorage
 		else {
 			setToken(response.token);
 			$('#login-spinner').hide();

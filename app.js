@@ -393,9 +393,13 @@ io.on('connection', function (socket){
 				day.setDate(night.getDate() + 1);
 				day.setHours(6);
 
+				console.log("Now: " + now);
+				console.log("Night: " + night);
+				console.log("Day: " + day);
+
 				// If it's outside our hours and the song is greater than 10 minutes
 				if ( ((now < night) || (now > day)) && (song.length_seconds > 600) ) {
-					fn({success : false, message : 'Sorry, that song is too long!'});
+					fn({success : false, message : 'Sorry, that song is longer than 10 minutes!'});
 				}
 
 				// Prevent adding the song if it's already in the queue
@@ -407,7 +411,7 @@ io.on('connection', function (socket){
 				else {
 					// Might be during night hours, so allow up to 2.5 hours
 					if (song.length_seconds > 2.5*60*60) {
-						fn({success : false, message : 'Sorry, that song is too long!'});
+						fn({success : false, message : 'Sorry, that song is longer than 2.5 hours!'});
 					}
 
 					else {

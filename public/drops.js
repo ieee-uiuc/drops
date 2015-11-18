@@ -51,8 +51,10 @@ function register() {
 	$('#register-spinner').show();
 	socket.emit('register', {username : $('#register-username').val(), password : $('#register-password').val()}, function(response) {
 		// If registration was unsuccessful (username already taken or some other error), display the response message
-		if (!response.success)
+		if (!response.success) {
+			$('#register-spinner').hide();
 			$('#register-results').html(response.message);
+		}
 		
 		// If registration succeeded, it'll make the user return with the JWT which we store in localStorage
 		else {

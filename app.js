@@ -264,6 +264,17 @@ io.on('connection', function (socket){
 
 	// Registers a user in the db with their provided credentials
 	socket.on('register', function(data, fn) {
+		// Lowercase to make it easier on the user on mobile phones that capitalize the first letter
+		var data.username = (data.username).toLowerCase();
+
+		// Only allow netids: lowercase alphanumeric, max 8 characters
+		var netidRegex = /^([a-z0-9]){1,8}$/;
+		if(!netidRegex.test(data.username))
+		{
+			fn({success : false, message : 'NetIDs only have letters and numbers!'});
+			return;
+		}
+
 		// Try finding the username first to see if it exists
 		User.findOne({ username: data.username }, function(err, user) {
 			// If some error happens
@@ -273,11 +284,12 @@ io.on('connection', function (socket){
 	        }
 
 	        // If a user with that name is found, tell the end user that they can't use this one.
-	        if (user)
-	        	fn({success : false, message : 'User "' + data.username + '" already exists.'});
+	        if (user) {
+	        	fn({success : false, message : 'User "' + data.username + '" is already registered.'});
+	        }
 
 	        // If the user is not found, add the new one 
-	        if (!user) {
+	        else {
 	        	// create a user a new user
 				var newUser = new User({
 				    username: data.username,
@@ -306,14 +318,13 @@ io.on('connection', function (socket){
 	        	return;
 	        }
 	    });
-
-	    
-
-		
 	});
 
 	// Checks whether the attempted credentials are correct and responds accordingly
 	socket.on('login', function(data, fn) {
+		// Lowercase to make it easier on the user on mobile phones that capitalize the first letter
+		var data.username = (data.username).toLowerCase();
+
 		// Find the user
 		User.findOne({ username: data.username }, function(err, user) {
 			// If some error happens

@@ -265,7 +265,7 @@ io.on('connection', function (socket){
 	// Registers a user in the db with their provided credentials
 	socket.on('register', function(data, fn) {
 		// Lowercase to make it easier on the user on mobile phones that capitalize the first letter
-		var data.username = (data.username).toLowerCase();
+		data.username = (data.username).toLowerCase();
 
 		// Only allow netids: lowercase alphanumeric, max 8 characters
 		var netidRegex = /^([a-z0-9]){1,8}$/;
@@ -323,7 +323,7 @@ io.on('connection', function (socket){
 	// Checks whether the attempted credentials are correct and responds accordingly
 	socket.on('login', function(data, fn) {
 		// Lowercase to make it easier on the user on mobile phones that capitalize the first letter
-		var data.username = (data.username).toLowerCase();
+		data.username = (data.username).toLowerCase();
 
 		// Find the user
 		User.findOne({ username: data.username }, function(err, user) {

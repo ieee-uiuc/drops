@@ -13,10 +13,11 @@ How to Run
 ===========
 
 1. `npm install`
-2. `npm start`
-3. Go to `localhost` or the IP address/domain name for your computer!
+2. Fill out the `config.js` file with your deployment parameters
+3. `npm start`
+4. Go to `localhost` or the IP address/domain name for your computer!
 
 Our Environment
 ===========
 
-IEEE runs this on a Raspberry Pi 2 running Raspbian, with some components updated to version Jessie. We run it in the background by using `screen`, the NPM `forever` or `forever-service` modules.
+IEEE runs this on a Raspberry Pi 2 running Raspbian, with some components updated to version Jessie. Further, the `forever` module is used to run `app.js` as a service. 

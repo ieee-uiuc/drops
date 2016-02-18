@@ -1,36 +1,53 @@
-var https = require('https');
 var spawn = require('child_process').spawn;
 var mongoose = require('mongoose');
 var User = require('./user');
 var fs = require('fs');
 var jwt = require('jsonwebtoken');
+var config = require('./config.js');
 
 /* GLOBAL RULE: QUEUE[0] IS ALWAYS THE SONG PLAYING AT THE MOMENT */
 
-var options = {
-    key:    fs.readFileSync('secret/private.key'),
-    cert:   fs.readFileSync('secret/ssl.crt'),
-    ca:     fs.readFileSync('secret/sub.class1.server.ca.pem')
-};
+var app;
+var io;
+// If environment is prod, use HTTPS/WSS
+if (config.env == "prod") {
+	var httpsOptions = {
+	    key:    fs.readFileSync(config.private_key_path),
+	    cert:   fs.readFileSync(config.ssl_cert_path),
+	    ca:     fs.readFileSync(config.ca_cert_path)
+	};
 
-// Listen to WebSocket Secure connections on port 8080
-var app = https.createServer(options);
-io = require('socket.io').listen(app);
+	app = require('https').createServer(httpsOptions);
+	io = require('socket.io').listen(app);
+}
+
+// If environment is dev, use HTTP/WS
+else if (config.env == "dev") {
+	app = require('http').createServer();
+	io = require('socket.io')(app);
+}
+
+// Exit if the env is neither prod nor dev
+else {
+	process.exit(1);
+}
+
+// Always listen to WebSocket connections on 8080
 app.listen(8080);
 
 // Make connection to MongoDB
-var connStr = 'mongodb://localhost/drops';
+var connStr = config.mongdb_url;
 mongoose.connect(connStr, function(err) {
     if (err) throw err;
     //console.log('Successfully connected to MongoDB');
 });
 
 // JSON Web Token related things
-var jwtSecret = fs.readFileSync('secret/jwt-secret');
-var AUDIENCE = "https://ecerso.party";
-var ISSUER = "https://ecerso.party";
-var EXPIRY = "2h";
-var ALGORITHM = "HS256";
+var JWT_SECRET = config.jwt_SECRET;
+var JWT_AUDIENCE = config.jwt_AUDIENCE;
+var JWT_ISSUER = config.jwt_ISSUER;
+var JWT_EXPIRY = config.jwt_EXPIRY;
+var JWT_ALGORITHM = config.jwt_ALGORITHM;
 
 // Total current user counter
 var numUsers = 0;
@@ -194,9 +211,8 @@ function nextSong(first) {
 		setMasterInterval();
 	}
 
-	// Send out updated queue and now playing status
-	sendQueue();
-	sendNowPlaying();
+	// Send out updated info
+	sendAll();
 }
 
 // Set repeat, loop, and random to off
@@ -205,12 +221,8 @@ rcVLC("loop off");
 rcVLC("random off");
 
 /* BROADCASTS */
-function broadcast(key, value) {
-	io.emit(key, value);
-}
-
 function sendNumUsers() {
-	broadcast('numUsersChanged', {newNumUsers : numUsers});
+	io.emit('numUsersChanged', {newNumUsers : numUsers});
 }
 
 function sendQueue() {
@@ -231,7 +243,7 @@ function sendAll() {
 setMasterInterval();
 
 function verifyToken(token, fn) {
-	jwt.verify(token, jwtSecret, {algorithms : [ALGORITHM], audience : AUDIENCE, issuer : ISSUER}, function(err, decoded) {
+	jwt.verify(token, JWT_SECRET, {algorithms : [JWT_ALGORITHM], audience : JWT_AUDIENCE, issuer : JWT_ISSUER}, function(err, decoded) {
 			// If the token is not valid
 			if (err)
 				fn({success : false, decodedToken : null});
@@ -248,11 +260,9 @@ io.on('connection', function (socket){
 
 	// Up the total current user counter
 	numUsers++;
-	sendNumUsers();
 
-	// Send them the queue for the first time, and the current playing status
-	sendQueue();
-	sendNowPlaying();
+	// Send them all the info for the first time
+	sendAll();
 	
 	// when someone disconnects, send the updated num to all the other users
 	socket.on('disconnect', function () {
@@ -306,10 +316,10 @@ io.on('connection', function (socket){
 
 				// Create the token and return that
             	var generatedToken = jwt.sign({	username : data.username},
-            									jwtSecret,
-            									{	expiresIn : EXPIRY,
-            										audience : AUDIENCE,
-            										issuer : ISSUER,
+            									JWT_SECRET,
+            									{	expiresIn : JWT_EXPIRY,
+            										audience : JWT_AUDIENCE,
+            										issuer : JWT_ISSUER,
             										subject : data.username
             									}
             								);
@@ -353,10 +363,10 @@ io.on('connection', function (socket){
 	            if (isMatch) {
 	            	// Create the token and return that
 	            	var generatedToken = jwt.sign({	username : user.username},
-	            									jwtSecret,
-	            									{	expiresIn : EXPIRY,
-	            										audience : AUDIENCE,
-	            										issuer : ISSUER,
+	            									JWT_SECRET,
+	            									{	expiresIn : JWT_EXPIRY,
+	            										audience : JWT_AUDIENCE,
+	            										issuer : JWT_ISSUER,
 	            										subject : user.username
 	            									}
 	            								);

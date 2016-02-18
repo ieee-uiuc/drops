@@ -36,8 +36,7 @@ else {
 app.listen(8080);
 
 // Make connection to MongoDB
-var connStr = config.mongdb_url;
-mongoose.connect(connStr, function(err) {
+mongoose.connect(config.mongodb_url, function(err) {
     if (err) throw err;
     //console.log('Successfully connected to MongoDB');
 });

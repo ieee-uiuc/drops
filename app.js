@@ -33,7 +33,7 @@ else {
 }
 
 // Always listen to WebSocket connections on 8080
-app.listen(8080);
+app.listen(config.ws_port);
 
 // Make connection to MongoDB
 mongoose.connect(config.mongodb_url, function(err) {

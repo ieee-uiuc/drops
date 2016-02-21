@@ -1,24 +1,23 @@
 # Prerequisites
 
-* A Linux distribution with the following applications installed
-	* VLC 2.1+
+* A Linux (preferably Debian based) distribution with the following applications installed
+	* VLC 2.2+
 	* NodeJS v4+
 	* NPM v2+
-	* MongoDB
-* Apache, with DocumentRoot set to `path to drops/public`
-	* You might need to configure Apache to actually show the front end properly
+	* MongoDB v3+
+* Apache or NginX to serve up the front end
 
 # How to Run
 
 1. Run `npm install`
-2. Fill out the `config.js` file with your deployment parameters
-3. Run `gulp` if you have Gulp installed globally, or `npm run deploy`
+2. Rename `config.js.sample` to `config.js` and fill it out with your deployment parameters
+3. Run `npm run deploy`
 4. Run `npm start`
 5. Go to `localhost` or the IP address/domain name for your computer!
 
 # Our Environment
 
-IEEE runs this on a Raspberry Pi 2 running Raspbian, with some components updated to version Jessie. Further, the `forever` module is used to run `app.js` as a service. 
+IEEE runs this on a Raspberry Pi 2 running Raspbian Jessie. Further, the `forever` module is used to run `app.js` as a service. 
 
 # Notes
 

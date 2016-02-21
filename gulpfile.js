@@ -13,18 +13,18 @@ gulp.task('search.js', function() {
         .pipe(replace('YT_KEY', config.youtube_key))
         .pipe(uglify())
         .pipe(rename({
-            suffix: ".min";
+            suffix: ".min"
         }))
         .pipe(gulp.dest(config.static_root));
 });
 
 
 // Minify drops.js
-gulp.task('drops.js', ['replace'], function() {
+gulp.task('drops.js', function() {
     return gulp.src('public/drops.js')
         .pipe(uglify())
         .pipe(rename({
-            suffix: ".min";
+            suffix: ".min"
         }))
         .pipe(gulp.dest(config.static_root));
 });
@@ -33,12 +33,18 @@ gulp.task('drops.js', ['replace'], function() {
 gulp.task('css', function() {
     return gulp.src('./public/*.css')
         .pipe(cssnano())
+	.pipe(rename({
+		suffix: ".min"
+	}))
         .pipe(gulp.dest(config.static_root));
 });
 
 // Minify HTML
 gulp.task('html', function() {
-    return gulp.src(['./public/*.html', './public/slides/*.html'], {base: './public/'});
+    return gulp.src(['./public/*.html', './public/slides/*.html'], {base: './public/'})
+	.pipe(replace('drops.css', 'drops.min.css'))
+	.pipe(replace('drops.js', 'drops.min.js'))
+	.pipe(replace('search.js', 'search.min.js'))
         .pipe(htmlmin({collapseWhitespace: true}))
         .pipe(gulp.dest(config.static_root))
 });

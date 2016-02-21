@@ -10,10 +10,11 @@
 
 # How to Run
 
-1. `npm install`
+1. Run `npm install`
 2. Fill out the `config.js` file with your deployment parameters
-3. `npm start`
-4. Go to `localhost` or the IP address/domain name for your computer!
+3. Run `gulp` if you have Gulp installed globally, or `npm run deploy`
+4. Run `npm start`
+5. Go to `localhost` or the IP address/domain name for your computer!
 
 # Our Environment
 

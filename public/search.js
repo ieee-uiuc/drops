@@ -39,7 +39,7 @@ function ytSearch() {
 		q: q,
 		part: 'snippet',
 		maxResults : 10,
-		key: 'AIzaSyBhZubf4N-jenWLm8aUQhkxjCc8_EMnEKA'
+		key: 'YT_KEY'
 	});
 
   	request.execute(function(response) {

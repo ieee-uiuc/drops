@@ -4,7 +4,8 @@
   "description": "ECE RSO Office Music System",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "deploy": "gulp"
   },
   "dependencies": {
     "bcrypt-nodejs": "*",
@@ -13,7 +14,14 @@
     "socket.io": "*",
     "ytdl-core": "*"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "gulp": "*",
+    "gulp-uglify": "*",
+    "gulp-cssnano": "*",
+    "gulp-htmlmin": "*",
+    "gulp-replace": "*",
+    "gulp-rename": "*"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ieee-uiuc/drops.git"

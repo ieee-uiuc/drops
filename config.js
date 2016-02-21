@@ -2,6 +2,10 @@ var config = {
 	// Environment can be "prod" for https, or "dev" for local/http
 	"env": "dev",
 
+	// Location of static root folder of the webserver
+	// Make sure Node is allowed to write to that folder!
+	"static_root": "",
+
 	// Integer to represent the WebSocket connection port number. Must be greater than 1024.
 	"ws_port": 8080,
 

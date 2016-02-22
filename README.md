@@ -22,3 +22,7 @@ IEEE runs this on a Raspberry Pi 2 running Raspbian Jessie. Further, the `foreve
 # Notes
 
 Since this process creates a child VLC process, and for some reason VLC cannot be run with `sudo`, the WebSocket port number must be >1024. To make this easier to set up, it might be better to set up a WebSocket proxy from Port 80/443 to the chosen port in NginX/Apache.
+
+# Acknowledgements
+
+This music system is inspired by [ACM@UIUC's Beats](https://github.com/acm-uiuc/beats).

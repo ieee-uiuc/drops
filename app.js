@@ -1,5 +1,4 @@
 var spawn = require('child_process').spawn;
-var mongoose = require('mongoose');
 var User = require('./user');
 var fs = require('fs');
 var needle = require('needle');
@@ -35,12 +34,6 @@ else {
 
 // Always listen to WebSocket connections on 8080
 app.listen(config.ws_port);
-
-// Make connection to MongoDB
-mongoose.connect(config.mongodb_url, function(err) {
-	if (err) throw err;
-	//console.log('Successfully connected to MongoDB');
-});
 
 // JSON Web Token related things
 var JWT_SECRET = config.jwt_SECRET;

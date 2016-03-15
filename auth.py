@@ -25,8 +25,9 @@ def login():
 		return "-1"
 	except ldap.LDAPError, e:
 		# -2 means there was some other error
-		return "=2"
+		print(ldap.LDAPError)
+		return "-2"
 	# 0 means login successful
 	return "0"
 
-run(host='localhost', port=8000, quiet=True)
+run(host='localhost', port=8000, quiet=False, debug=True)

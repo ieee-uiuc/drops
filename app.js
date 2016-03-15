@@ -56,9 +56,6 @@ var intervalObj, masterIntervalObj;
 var vlc = spawn('vlc', ['-I', 'rc']);
 vlc.stdin.setEncoding('utf-8');
 
-// Create the Python process that handles authentication, which creates a small server with a POST endpoint on http://localhost:8000/login that takes "netid" and "username" form data and handles LDAP authentication to UIUC's Active Directory
-var auth = spawn('python',["auth.py"]);
-
 // Pipes the command to the VLC remote control interface
 function rcVLC(command) {
 	var toWrite = command + "\n";
@@ -283,6 +280,11 @@ io.on('connection', function (socket){
 			'http://localhost:8000/login',
 			{ netid:data.username, password:data.password },
 			function (error, response, body) {
+				if (error) {
+					console.log(error);
+					fn({success : false, message : 'Error on login.'});
+					return;
+				}
 				if (!error && response.statusCode == 200) {
 					if (body == "0") {
 						var generatedToken = jwt.sign({	username : data.username},
@@ -293,12 +295,17 @@ io.on('connection', function (socket){
 		            										subject : data.username
 		            									});
 						fn({success : true, message : 'Login successful!', token : generatedToken});
+						return;
 					}
-					else if (body == "-1")
+					else if (body == "-1") {
 						fn({success : false, message : 'NetID or password incorrect.'});
-					else
-						fn({success : false, message : 'Error on login.'});
-					return
+						return;
+					}
+					else {
+						fn({success : false, message : 'LDAP Error.'});
+						return;
+					}
+					return;
 				}
 			}
 		);

@@ -292,7 +292,21 @@ io.on('connection', function (socket){
 			{ netid:data.username, password:data.password },
 			function (error, response, body) {
 				if (!error && response.statusCode == 200) {
-					console.log(body)
+					if (body == 0) {
+						var generatedToken = jwt.sign({	username : data.username},
+		            									JWT_SECRET,
+		            									{	expiresIn : JWT_EXPIRY,
+		            										audience : JWT_AUDIENCE,
+		            										issuer : JWT_ISSUER,
+		            										subject : data.username
+		            									});
+						fn({success : true, message : 'Login successful!', token : generatedToken});
+					}
+					else if (body == -1)
+						fn({success : false, message : 'NetID or password incorrect.'});
+					else
+						fn({success : false, message : 'Error on login.'});
+					return
 				}
 			}
 		);

@@ -1,7 +1,7 @@
 var spawn = require('child_process').spawn;
-var mongoose = require('mongoose');
 var User = require('./user');
 var fs = require('fs');
+var needle = require('needle');
 var jwt = require('jsonwebtoken');
 var config = require('./config.js');
 
@@ -12,9 +12,9 @@ var io;
 // If environment is prod, use HTTPS/WSS
 if (config.env == "prod") {
 	var httpsOptions = {
-	    key:    fs.readFileSync(config.private_key_path),
-	    cert:   fs.readFileSync(config.ssl_cert_path),
-	    ca:     fs.readFileSync(config.ca_cert_path)
+		key:    fs.readFileSync(config.private_key_path),
+		cert:   fs.readFileSync(config.ssl_cert_path),
+		ca:     fs.readFileSync(config.ca_cert_path)
 	};
 
 	app = require('https').createServer(httpsOptions);
@@ -34,12 +34,6 @@ else {
 
 // Always listen to WebSocket connections on 8080
 app.listen(config.ws_port);
-
-// Make connection to MongoDB
-mongoose.connect(config.mongodb_url, function(err) {
-    if (err) throw err;
-    //console.log('Successfully connected to MongoDB');
-});
 
 // JSON Web Token related things
 var JWT_SECRET = config.jwt_SECRET;
@@ -62,6 +56,9 @@ var intervalObj, masterIntervalObj;
 // Create the remote controlled VLC process
 var vlc = spawn('vlc', ['-I', 'rc']);
 vlc.stdin.setEncoding('utf-8');
+
+// Create the Python process that handles authentication, which creates a small server with a POST endpoint on http://localhost:8000/login that takes "netid" and "username" form data and handles LDAP authentication to UIUC's Active Directory
+var auth = spawn('python',["auth.py"]);
 
 // Pipes the command to the VLC remote control interface
 function rcVLC(command) {
@@ -269,10 +266,9 @@ io.on('connection', function (socket){
 		sendNumUsers();
 	});
 
-	/* Credential related functions - register, login, verifyToken */
+	/* Credential related functions - login, verifyToken */
 
-	// Registers a user in the db with their provided credentials
-	socket.on('register', function(data, fn) {
+	socket.on('login', function(data, fn) {
 		// Lowercase to make it easier on the user on mobile phones that capitalize the first letter
 		data.username = (data.username).toLowerCase();
 
@@ -284,96 +280,29 @@ io.on('connection', function (socket){
 			return;
 		}
 
-		// Try finding the username first to see if it exists
-		User.findOne({ username: data.username }, function(err, user) {
-			// If some error happens
-	        if (err) {
-	        	fn({success : false, message : 'Something happened.'});
-	        	throw err;
-	        }
-
-	        // If a user with that name is found, tell the end user that they can't use this one.
-	        if (user) {
-	        	fn({success : false, message : 'User "' + data.username + '" is already registered.'});
-	        }
-
-	        // If the user is not found, add the new one 
-	        else {
-	        	// create a user a new user
-				var newUser = new User({
-				    username: data.username,
-				    password: data.password
-				});
-
-				// Save user to database
-				newUser.save(function(err) {
-				    if (err) {
-				    	fn({success : false, message : 'Could not save user.'});
-				    	throw err;
-				    }
-				});
-
-				// Create the token and return that
-            	var generatedToken = jwt.sign({	username : data.username},
-            									JWT_SECRET,
-            									{	expiresIn : JWT_EXPIRY,
-            										audience : JWT_AUDIENCE,
-            										issuer : JWT_ISSUER,
-            										subject : data.username
-            									}
-            								);
-
-	        	fn({success : true, message : 'Thanks for registering ' + data.username, token : generatedToken});
-	        	return;
-	        }
-	    });
-	});
-
-	// Checks whether the attempted credentials are correct and responds accordingly
-	socket.on('login', function(data, fn) {
-		// Lowercase to make it easier on the user on mobile phones that capitalize the first letter
-		data.username = (data.username).toLowerCase();
-
-		// Find the user
-		User.findOne({ username: data.username }, function(err, user) {
-			// If some error happens
-	        if (err) {
-	        	fn({success : false, message : 'Something happened.'});
-	        	throw err;
-	        }
-
-	        // If the user is not found
-	        if (!user) {
-	        	fn({success : false, message : 'User "' + data.username + '" not found.'});
-	        	return;
-	        }
-
-	        // Check whether the password matches
-	        user.comparePassword(data.password, function(err, isMatch) {
-	            if (err)
-	            	throw err;
-
-	            // If the password does not match
-	            if (!isMatch) {
-	            	fn({success : false, message : 'Password incorrect.'});
-	            }
-	            
-	            // If password matches, create and send the token.
-	            if (isMatch) {
-	            	// Create the token and return that
-	            	var generatedToken = jwt.sign({	username : user.username},
-	            									JWT_SECRET,
-	            									{	expiresIn : JWT_EXPIRY,
-	            										audience : JWT_AUDIENCE,
-	            										issuer : JWT_ISSUER,
-	            										subject : user.username
-	            									}
-	            								);
-					fn({success : true, message : 'Login success.', token : generatedToken});
-	            }
-	        });
-
-	    });
+		needle.post(
+			'http://localhost:8000/login',
+			{ netid:data.username, password:data.password },
+			function (error, response, body) {
+				if (!error && response.statusCode == 200) {
+					if (body == "0") {
+						var generatedToken = jwt.sign({	username : data.username},
+		            									JWT_SECRET,
+		            									{	expiresIn : JWT_EXPIRY,
+		            										audience : JWT_AUDIENCE,
+		            										issuer : JWT_ISSUER,
+		            										subject : data.username
+		            									});
+						fn({success : true, message : 'Login successful!', token : generatedToken});
+					}
+					else if (body == "-1")
+						fn({success : false, message : 'NetID or password incorrect.'});
+					else
+						fn({success : false, message : 'Error on login.'});
+					return
+				}
+			}
+		);
 	});
 
 	// Checks whether the supplied token is valid

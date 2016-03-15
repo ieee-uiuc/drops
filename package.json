@@ -10,9 +10,9 @@
   "dependencies": {
     "bcrypt-nodejs": "*",
     "jsonwebtoken": "*",
-    "mongoose": "*",
     "socket.io": "*",
-    "ytdl-core": "*"
+    "ytdl-core": "*",
+    "needle": "*"
   },
   "devDependencies": {
     "gulp": "*",

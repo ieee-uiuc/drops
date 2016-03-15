@@ -47,30 +47,6 @@ function checkToken(cb) {
 	});
 }
 
-function register() {
-	$('#register-spinner').show();
-	socket.emit('register', {username : $('#register-username').val(), password : $('#register-password').val()}, function(response) {
-		// If registration was unsuccessful (username already taken or some other error), display the response message
-		if (!response.success) {
-			$('#register-spinner').hide();
-			$('#register-results').html(response.message);
-		}
-		
-		// If registration succeeded, it'll make the user return with the JWT which we store in localStorage
-		else {
-			setToken(response.token);
-			$('#register-spinner').hide();
-			$('#register-results').html(response.message);
-
-			// Show the message for 1.5 seconds before closing the modal
-			setTimeout(function() {
-				$('#sign-in-modal').closeModal();
-				$('.sign-in-button, .register-button').fadeOut('fast');
-			}, 1500);
-		}
-	});
-}
-
 function login() {
 	$('#login-spinner').show();
 	socket.emit('login', {username : $('#login-username').val(), password : $('#login-password').val()}, function(response) {

@@ -1,0 +1,2 @@
+python-ldap >= 2.4.25
+bottle >= 0.12.9

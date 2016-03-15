@@ -60,80 +60,37 @@
 			<div id="sign-in-modal" class="modal">
 				<div class="modal-content">
 			  		<div class="row">
-						<div class="col s12">
-							<ul class="tabs">
-								<li class="tab col s3"><a class="active" href="#tab-signin">Sign In</a></li>
-								<li class="tab col s3"><a href="#tab-signup">Sign Up</a></li>
-							</ul>
-						</div>
-
-						<div id="tab-signin" class="col s12">
-							<form class="col s12" action="javascript:login()">
-								<div class="row">
-									<div class="input-field col s12">
-										<input id="login-username" type="text" class="validate" maxlength="8" required>
-	          							<label for="login-username">NetID</label>
-									</div>
-									<div class="input-field col s12">
-										<input id="login-password" type="password" class="validate" required>
-	          							<label for="login-password">Password</label>
-									</div>
+						<form class="col s12" action="javascript:login()">
+							<div class="row">
+								<div class="input-field col s12">
+									<input id="login-username" type="text" class="validate" maxlength="8" required>
+          							<label for="login-username">NetID</label>
 								</div>
-								<div>
-									<div class="input-field col s12 l8">
-										<button data-target="sign-in-modal" class="btn sign-in-button">Sign In</button>
-									</div>
-									<div class="input-field col s12 l4">
-										<div class="preloader-wrapper small active" id="login-spinner" style="display:none">
-											<div class="spinner-layer spinner-blue-only">
-												<div class="circle-clipper left">
-													<div class="circle"></div>
-												</div><div class="gap-patch">
-												<div class="circle"></div>
-												</div><div class="circle-clipper right">
-												<div class="circle"></div>
-												</div>
-												</div>
-										</div>
-										<span id="login-results"></span>
-									</div>
+								<div class="input-field col s12">
+									<input id="login-password" type="password" class="validate" required>
+          							<label for="login-password">AD Password</label>
 								</div>
-							</form>
-						</div>
-
-						<div id="tab-signup" class="col s12">
-							<form class="col s12" action="javascript:register()">
-								<div class="row">
-									<div class="input-field col s12">
-										<input id="register-username" type="text" class="validate" maxlength="8" required>
-	          							<label for="register-username">NetID</label>
-									</div>
-									<div class="input-field col s12">
-										<input id="register-password" type="password" class="validate" required>
-	          							<label for="register-password">Password (don't use your AD password!)</label>
-									</div>
+							</div>
+							<div>
+								<div class="input-field col s12 l8">
+									<button data-target="sign-in-modal" class="btn sign-in-button">Sign In</button>
 								</div>
-								<div>
-									<div class="input-field col s12 l8">
-										<button data-target="sign-in-modal" class="btn register-button">Sign Up</button>
-									</div>
-									<div class="input-field col s12 l4">
-										<div class="preloader-wrapper small active" id="register-spinner" style="display:none">
-											<div class="spinner-layer spinner-blue-only">
-												<div class="circle-clipper left">
-													<div class="circle"></div>
-												</div><div class="gap-patch">
+								<div class="input-field col s12 l4">
+									<div class="preloader-wrapper small active" id="login-spinner" style="display:none">
+										<div class="spinner-layer spinner-blue-only">
+											<div class="circle-clipper left">
 												<div class="circle"></div>
-												</div><div class="circle-clipper right">
-												<div class="circle"></div>
-												</div>
-												</div>
-										</div>
-										<span id="register-results"></span>
+											</div><div class="gap-patch">
+											<div class="circle"></div>
+											</div><div class="circle-clipper right">
+											<div class="circle"></div>
+											</div>
+											</div>
 									</div>
+									<span id="login-results"></span>
 								</div>
-							</form>
-						</div>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>

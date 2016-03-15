@@ -1,5 +1,4 @@
 var spawn = require('child_process').spawn;
-var User = require('./user');
 var fs = require('fs');
 var needle = require('needle');
 var jwt = require('jsonwebtoken');

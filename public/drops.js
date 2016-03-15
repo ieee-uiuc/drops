@@ -50,21 +50,15 @@ function checkToken(cb) {
 function login() {
 	$('#login-spinner').show();
 	socket.emit('login', {username : $('#login-username').val(), password : $('#login-password').val()}, function(response) {
-		// If login was unsuccessful (username and/or password was incorrect)
-		if (!response.success)
-			$('#login-results').html(response.message);
-		
-		// If login was successful, save it in localStorage
-		else {
-			setToken(response.token);
-			$('#login-spinner').hide();
-			$('#login-results').html(response.message);
+		$('#login-spinner').hide();
+		$('#login-results').html(response.message);
+		notify(response.message);
 
-			// Show the message for 1.5 seconds before closing the modal
-			setTimeout(function() {
-				$('#sign-in-modal').closeModal();
-				$('.sign-in-button, .register-button').fadeOut('fast');
-			}, 1500);
+		// If login was successful, save it in localStorage
+		if (response.success) {
+			setToken(response.token);
+			$('#sign-in-modal').closeModal();
+			$('.sign-in-button, .register-button').fadeOut('fast');
 		}
 	});
 		

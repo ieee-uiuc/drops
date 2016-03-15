@@ -22,11 +22,11 @@ def login():
 		l.bind_s(username, password)
 	except ldap.INVALID_CREDENTIALS:
 		# -1 means the username or password was incorrect
-		return -1
+		return "-1"
 	except ldap.LDAPError, e:
 		# -2 means there was some other error
-		return -2
+		return "=2"
 	# 0 means login successful
-	return 0
+	return "0"
 
 run(host='localhost', port=8000, quiet=True)

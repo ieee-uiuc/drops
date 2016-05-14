@@ -4,6 +4,7 @@
 	* VLC 2.2+
 	* NodeJS v4+
 	* NPM v2+
+    * MongoDB v3+
 	* Python 2.7
 	* Pip
 * Apache or NginX configured to serve up the front end

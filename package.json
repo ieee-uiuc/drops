@@ -8,7 +8,7 @@
     "deploy": "gulp"
   },
   "dependencies": {
-    "bcrypt-nodejs": "*",
+    "mongoose": "*",
     "jsonwebtoken": "*",
     "socket.io": "*",
     "ytdl-core": "*",

@@ -9,6 +9,9 @@ var config = {
 	// Integer to represent the WebSocket connection port number. Must be greater than 1024.
 	"ws_port": 8080,
 
+	// Link to Mongo Database: mongodb://username:password@server/db
+	"mongodb_url": "",
+
 	// TLS Info - if dev (insecure) environment, keep empty
 	"private_key_path": "",
 	"ssl_cert_path": "",
